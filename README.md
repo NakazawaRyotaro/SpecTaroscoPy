@@ -19,7 +19,7 @@ DOI: 10.48550/arXiv.2509.21246 (https://doi.org/10.48550/arXiv.2509.21246)
 
 (現在、国際誌に投稿中)
 
-*************************************************************************************
+
 ## License and Citation
 This project is licensed under the Creative Commons 
 Attribution-NonCommercial 4.0 International License (CC BY-NC 4.0).
@@ -30,7 +30,8 @@ R. Nakazawa, H. Sato, and H. Yoshida, arXiv (2025).
 DOI: 10.48550/arXiv.2509.21246 (https://doi.org/10.48550/arXiv.2509.21246)
 
 (Under the peer review)
-***********************************************************************************
+
+## Set up
 では、はじめに以下の初期設定をおねがいします。
 (1) Pythonをインストールしてください。
 	このアプリはPythonで開発されています(Python3.12.7)。
