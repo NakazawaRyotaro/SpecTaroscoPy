@@ -1,6 +1,10 @@
 こんにちは。分子研の中澤遼太郎です。
 こちらはスぺクトル解析を行うツール ”SpecTaroscoPy” です。
-
+昨日は以下の通りです。
+- ARPES解析。image -> EDC, MDC の変換。軸の変換。MBS A-1装置@IMSに最適化していますが、他の装置でも最低限使用可能なはずです。
+- 二次微分解析。曲率解析。
+- 逆畳み込み解析。
+- カーブフィッティング解析。
 ## ライセンスと引用
 ライセンスはCC BY-NC 4.0 としました。
 ご理解ください。
@@ -8,8 +12,10 @@
 謝辞または共著としてクレジットを記載いただけますと幸いです。
 
 特にDeconvolution, Second derivative 解析をご利用の際は、以下の文献を引用してください。
+
 R. Nakazawa, H. Sato, and H. Yoshida, arXiv (2025).
 DOI: 10.48550/arXiv.2509.21246 (https://doi.org/10.48550/arXiv.2509.21246)
+
 (現在、国際誌に投稿中)
 
 *************************************************************************************
@@ -18,6 +24,7 @@ This project is licensed under the Creative Commons
 Attribution-NonCommercial 4.0 International License (CC BY-NC 4.0).
 
 If you use "Deconvolution" and "Second derivative" in "SpecTaroscoPy" for your research, please cite:
+
 R. Nakazawa, H. Sato, and H. Yoshida, arXiv (2025).  
 DOI: 10.48550/arXiv.2509.21246 (https://doi.org/10.48550/arXiv.2509.21246)
 
