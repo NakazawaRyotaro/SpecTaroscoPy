@@ -1,0 +1,153 @@
+# Appearance ########################################################################
+#####################################################################################
+# imageの色
+colormap_photoemission_intensity_map	RdYlBu_r
+archive...cividis bwr coolwarm　bwr
+# EDCの色
+color_edc	darkslateblue
+archive...darkblue navy mediumblue indigo black darkslategray darkslateblue
+
+
+# window size, image size ###########################################################
+#####################################################################################
+# window size
+window_width_photoemission_intensity_map	1270.0
+window_height_photoemission_intensity_map	740.0
+# image size
+image_width_photoemission_intensity_map	3.8
+image_height_photoemission_intensity_map	2.7
+
+# archive #########
+# MacBookPro14
+window_width_photoemission_intensity_map_	1020
+window_height_photoemission_intensity_map_	690
+image_width_photoemission_intensity_map_	3.7
+image_height_photoemission_intensity_map_	2.7
+
+# ASUS_IMS216
+window_width_photoemission_intensity_map_	1200
+window_height_photoemission_intensity_map_	700
+image_width_photoemission_intensity_map_	4.5
+image_height_photoemission_intensity_map_	3.5
+
+# LGwide_A1room
+window_width_photoemission_intensity_map_	1020
+window_height_photoemission_intensity_map_	670
+image_width_photoemission_intensity_map_	3.7
+image_height_photoemission_intensity_map_	2.7
+
+# iiyama_IMS216
+window_width_photoemission_intensity_map_	1200
+window_height_photoemission_intensity_map_	600
+image_width_photoemission_intensity_map_	4.5
+image_height_photoemission_intensity_map_	3
+
+# hp_laptop
+window_width_photoemission_intensity_map_	1100
+window_height_photoemission_intensity_map_	450
+image_width_photoemission_intensity_map_	6
+image_height_photoemission_intensity_map_	4
+
+# BenQ_myhome
+window_width_photoemission_intensity_map_	1200
+window_height_photoemission_intensity_map_	600
+image_width_photoemission_intensity_map_	4
+image_height_photoemission_intensity_map_	2.8
+
+
+# Fermi level of MBS A-1 in Kera G ##################################################
+#####################################################################################
+# XeI
+EF_XeIa_Ep02_MBSA1_KeraG	4.17
+EF_XeIa_Ep05_MBSA1_KeraG	4.17
+EF_XeIa_Ep10_MBSA1_KeraG	4.19
+EF_XeIa_Ep20_MBSA1_KeraG	
+# HeI
+EF_HeIa_Ep02_MBSA1_KeraG	16.95
+EF_HeIa_Ep05_MBSA1_KeraG	16.95
+EF_HeIa_Ep10_MBSA1_KeraG	16.96
+EF_HeIa_Ep20_MBSA1_KeraG	
+# HeII
+EF_HeIIa_Ep02_MBSA1_KeraG	
+EF_HeIIa_Ep05_MBSA1_KeraG	
+EF_HeIIa_Ep10_MBSA1_KeraG	36.56
+EF_HeIIa_Ep20_MBSA1_KeraG	36.56
+# XPS
+EF_AlKa_Ep100_MBSA1_KeraG	1482.08
+EF_MgKa_Ep100_MBSA1_KeraG	1249.1
+
+
+# archive #########
+# HeIa 202408-20240117 polyAuで決定
+EF_HeIa_Ep01_MBSA1_KeraG_	16.96
+EF_HeIa_Ep02_MBSA1_KeraG_	16.96
+EF_HeIa_Ep05_MBSA1_KeraG_	16.96
+EF_HeIa_Ep10_MBSA1_KeraG_	16.96
+EF_HeIa_Ep20_MBSA1_KeraG_	16.96
+# XeI 202408-20240117
+EF_XeIa_Ep02_MBSA1_KeraG_	4.18
+EF_XeIa_Ep05_MBSA1_KeraG_	4.18
+EF_XeIa_Ep10_MBSA1_KeraG_	4.18
+EF_XeIa_Ep20_MBSA1_KeraG_	
+
+# Fermi level of MBS A-1 in UVSOR BL7U ##############################################
+#####################################################################################
+# G1, Ep02 (G1 Ep10を代用)
+EF_variable_hn_Ep02_G1_MBSA1_BL7U	35.39
+hn_variable_hn_Ep02_G1_MBSA1_BL7U	40.0
+# G1, Ep05
+EF_variable_hn_Ep05_G1_MBSA1_BL7U	35.39
+hn_variable_hn_Ep05_G1_MBSA1_BL7U	40.0
+# G1, Ep10
+EF_variable_hn_Ep10_G1_MBSA1_BL7U	35.39
+hn_variable_hn_Ep10_G1_MBSA1_BL7U	40.0
+# G1, Ep20
+EF_variable_hn_Ep20_G1_MBSA1_BL7U	35.39
+hn_variable_hn_Ep20_G1_MBSA1_BL7U	40.0
+
+# G2, Ep02
+EF_variable_hn_Ep02_G2_MBSA1_BL7U	
+hn_variable_hn_Ep02_G2_MBSA1_BL7U	
+# G2, Ep05
+EF_variable_hn_Ep05_G2_MBSA1_BL7U	
+hn_variable_hn_Ep05_G2_MBSA1_BL7U	
+# G2, Ep10
+EF_variable_hn_Ep10_G2_MBSA1_BL7U	
+hn_variable_hn_Ep10_G2_MBSA1_BL7U	
+# G2, Ep20
+EF_variable_hn_Ep20_G2_MBSA1_BL7U	
+hn_variable_hn_Ep20_G2_MBSA1_BL7U	
+
+
+# G3, Ep02
+EF_variable_hn_Ep02_G3_MBSA1_BL7U	5.442
+hn_variable_hn_Ep02_G3_MBSA1_BL7U	10.0
+# G3, Ep05
+EF_variable_hn_Ep05_G3_MBSA1_BL7U	5.444
+hn_variable_hn_Ep05_G3_MBSA1_BL7U	10.0
+# G3, Ep10
+EF_variable_hn_Ep10_G3_MBSA1_BL7U	5.444
+hn_variable_hn_Ep10_G3_MBSA1_BL7U	10.0
+# G3, Ep20
+EF_variable_hn_Ep20_G3_MBSA1_BL7U	5.444
+hn_variable_hn_Ep20_G3_MBSA1_BL7U	10.0
+
+
+
+### archive #########
+#2024/12
+# G1, Ep20, filename: Au#1,2
+EF	35.39
+hn	40
+
+# 2024/07
+# G1, EP20, filename: Alpha#56
+EF	35.45
+hn	40
+# G1, EP10, Alpha00057
+EF	35.41
+hn	40
+
+# G3, PE05, PE02, filename: beta00248
+EF	5.444
+hn	10
