@@ -12,7 +12,6 @@
 ご理解ください。
 本ツールを用いた成果を発表される際には、
 謝辞または共著としてクレジットを記載いただけますと幸いです。
-
 特にDeconvolution, Second derivative 解析をご利用の際は、以下の文献を引用してください。
 
 R. Nakazawa, H. Sato, and H. Yoshida, arXiv (2025).
@@ -24,12 +23,13 @@ DOI: 10.48550/arXiv.2509.21246 (https://doi.org/10.48550/arXiv.2509.21246)
 ## License and Citation
 This project is licensed under the Creative Commons 
 Attribution-NonCommercial 4.0 International License (CC BY-NC 4.0).
-
 If you use "Deconvolution" and "Second derivative" in "SpecTaroscoPy" for your research, please cite:
 
-R. Nakazawa, H. Sato, and H. Yoshida, arXiv (2025).  
+R. Nakazawa, H. Sato, and H. Yoshida, arXiv (2025).
+
 DOI: 10.48550/arXiv.2509.21246 (https://doi.org/10.48550/arXiv.2509.21246)
 
+(Under the peer review)
 ***********************************************************************************
 では、はじめに以下の初期設定をおねがいします。
 (1) Pythonをインストールしてください。
