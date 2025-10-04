@@ -729,11 +729,41 @@ class App(customtkinter.CTk):
         self.Vsample_entry.grid(row=0, column=9, padx=(0,10), pady=(10,0), sticky="ew")
 
         # 2PPE
-        twoPPE_frame = customtkinter.CTkFrame(self.axis_conversion_frame, width=285)
-        twoPPE_frame.grid(row=1, column=1, padx=(0,5), pady=(5,10), sticky="ew", columnspan=7)
-        customtkinter.CTkLabel(twoPPE_frame, text="(D)2PPE", width=30, font=self.fonts).grid(row=0, column=0, padx=(15,10), pady=(10,10), sticky="w")
-        self.hn_2PPE_entry = customtkinter.CTkEntry(twoPPE_frame, placeholder_text="Fundamental (nm)", font=self.fonts, width=140)
-        self.hn_2PPE_entry.grid(row=0, column=1, padx=(0,10), pady=(10,10), sticky="ew")
+        twoPPE_frame = customtkinter.CTkFrame(self.axis_conversion_frame, width=220)
+        twoPPE_frame.grid(row=1, column=1, padx=(0,5), pady=(5,10), sticky="ew", columnspan=6)
+        self.make_2PPE_frame(twoPPE_frame)
+
+        # 角度, k//変換
+        # Frame
+        angkhconversion_frame = customtkinter.CTkFrame(self.axis_conversion_frame, width=100)
+        angkhconversion_frame.grid(row=1, column=7, padx=(0,5), pady=(5,10), sticky="ew")
+        self.switch_value_angkhconversion = customtkinter.BooleanVar() # チェックボックスの変数を作成し、初期値をTrueに設定
+        self.switch_value_angkhconversion.set(True)
+        self.angkhconversion_switch = customtkinter.CTkSwitch(
+            angkhconversion_frame,
+            text=f"Angle\n→k//",
+            variable=self.switch_value_angkhconversion)
+        self.angkhconversion_switch.grid(row=0, column=1, padx=(5,5), pady=10, sticky="ew")
+
+        # 真空準位基準のEB
+        # Frame
+        VL_frame = customtkinter.CTkFrame(self.axis_conversion_frame, width=250)
+        VL_frame.grid(row=1, column=8, padx=(0, 5), pady=(5,10), sticky="ew", columnspan=3)
+        self.switch_value_VL = customtkinter.BooleanVar()
+        self.switch_value_VL.set(False)
+        self.VL_switch = customtkinter.CTkSwitch(
+            VL_frame,
+            text=f"Ek\n→VL",
+            variable=self.switch_value_VL)
+        self.VL_switch.grid(row=0, column=1, padx=(10, 0), pady=10, sticky="ew")
+        self.SECO_entry = customtkinter.CTkEntry(VL_frame, placeholder_text="Ek@SECO (eV)", width=110)
+        self.SECO_entry.grid(row=0, column=3, padx=(0,10), pady=10, sticky="ew")
+    
+
+    def make_2PPE_frame(self, twoPPE_frame):
+        customtkinter.CTkLabel(twoPPE_frame, text="2PPE", width=30, font=self.fonts).grid(row=0, column=0, padx=(10,0), pady=(10,10), sticky="w")
+        self.hn_2PPE_entry = customtkinter.CTkEntry(twoPPE_frame, placeholder_text="λ_ω (nm)", font=self.fonts, width=80)
+        self.hn_2PPE_entry.grid(row=0, column=1, padx=(10,0), pady=(10,10), sticky="ew")
         self.hn_2PPE_entry.bind("<Return>",command=self.get_x_EF_and_hn_of_2PPE_entry)
 
         # Pumpラベル
@@ -748,7 +778,7 @@ class App(customtkinter.CTk):
             variable=self.pump_selection,
             command=lambda value: print(f"Selected Pump: {value}")
         )
-        self.pump_segmented.grid(row=0, column=4, columnspan=2, padx=(10, 15), pady=5, sticky="ew")
+        self.pump_segmented.grid(row=0, column=4, columnspan=2, padx=(10, 0), pady=5, sticky="ew")
 
         # # probe
         customtkinter.CTkLabel(twoPPE_frame, text="Probe", width=30).grid(row=0, column=6, padx=(10,0), pady=(10,10), sticky="w")
@@ -761,7 +791,7 @@ class App(customtkinter.CTk):
             variable=self.probe_selection,
             command=lambda value: print(f"Selected Probe: {value}")  # 任意のコールバック処理
         )
-        self.probe_segmented.grid(row=0, column=7, padx=(10, 15), pady=5, sticky="ew")
+        self.probe_segmented.grid(row=0, column=7, padx=(10, 0), pady=5, sticky="ew")
 
         # zero delay
         # トグルスイッチの状態管理用変数（初期値: True）
@@ -776,31 +806,6 @@ class App(customtkinter.CTk):
         # レイアウト設定（grid）
         self.zero_delay_switch.grid(row=0, column=9, padx=(10, 5), pady=10, sticky="ew")
 
-        # 角度, k//変換
-        # Frame
-        angkhconversion_frame = customtkinter.CTkFrame(self.axis_conversion_frame, width=100)
-        angkhconversion_frame.grid(row=1, column=8, padx=(0,5), pady=(5,10), sticky="ew")
-        self.switch_value_angkhconversion = customtkinter.BooleanVar() # チェックボックスの変数を作成し、初期値をTrueに設定
-        self.switch_value_angkhconversion.set(True)
-        self.angkhconversion_switch = customtkinter.CTkSwitch(
-            angkhconversion_frame,
-            text=f"Angle\n→k//",
-            variable=self.switch_value_angkhconversion)
-        self.angkhconversion_switch.grid(row=0, column=1, padx=(5,5), pady=10, sticky="ew")
-
-        # 真空準位基準のEB
-        # Frame
-        VL_frame = customtkinter.CTkFrame(self.axis_conversion_frame, width=250)
-        VL_frame.grid(row=1, column=9, padx=(0, 5), pady=(5,10), sticky="ew", columnspan=3)
-        self.switch_value_VL = customtkinter.BooleanVar()
-        self.switch_value_VL.set(False)
-        self.VL_switch = customtkinter.CTkSwitch(
-            VL_frame,
-            text=f"Ek\n→VL",
-            variable=self.switch_value_VL)
-        self.VL_switch.grid(row=0, column=1, padx=(10, 0), pady=10, sticky="ew")
-        self.SECO_entry = customtkinter.CTkEntry(VL_frame, placeholder_text="Ek@SECO (eV)", width=110)
-        self.SECO_entry.grid(row=0, column=3, padx=(0,10), pady=10, sticky="ew")
 
     def get_x_EF_manually(self):
         self.hn=None
