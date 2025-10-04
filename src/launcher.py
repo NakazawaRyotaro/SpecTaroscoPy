@@ -73,7 +73,7 @@ class App(customtkinter.CTk):
 
         # フォームサイズ設定
         self.geometry(f"{WINDOW_WIDTH}x400")
-        self.title(f"SpecTaroscoPy ver.{VERSION}")
+        self.title(f"SpecTaroscoPy – ver. {VERSION}")
 
         # 行方向のマスのレイアウトを設定する。リサイズしたときに一緒に拡大したい行をweight 1に設定。
         self.grid_rowconfigure(2, weight=1) # 2+1のフレームが広がる
