@@ -4,7 +4,6 @@ import numpy as np
 import platform
 import matplotlib.pyplot as plt
 import tkinter.messagebox as messagebox
-import csv
 import datetime
 from PIL import Image, ImageTk
 from pathlib import Path

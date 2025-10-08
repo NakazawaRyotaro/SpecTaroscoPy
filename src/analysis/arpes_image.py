@@ -747,17 +747,17 @@ class App(customtkinter.CTk):
 
         # 真空準位基準のEB
         # Frame
-        VL_frame = customtkinter.CTkFrame(self.axis_conversion_frame, width=250)
-        VL_frame.grid(row=1, column=8, padx=(0, 5), pady=(5,10), sticky="ew", columnspan=3)
+        VL_frame = customtkinter.CTkFrame(self.axis_conversion_frame, width=200)
+        VL_frame.grid(row=1, column=8, padx=(0, 5), pady=(5,10), sticky="ew", columnspan=2)
         self.switch_value_VL = customtkinter.BooleanVar()
         self.switch_value_VL.set(False)
         self.VL_switch = customtkinter.CTkSwitch(
             VL_frame,
             text=f"Ek\n→VL",
-            variable=self.switch_value_VL)
+            variable=self.switch_value_VL, width=50)
         self.VL_switch.grid(row=0, column=1, padx=(10, 0), pady=10, sticky="ew")
         self.SECO_entry = customtkinter.CTkEntry(VL_frame, placeholder_text="Ek@SECO (eV)", width=110)
-        self.SECO_entry.grid(row=0, column=3, padx=(0,10), pady=10, sticky="ew")
+        self.SECO_entry.grid(row=0, column=2, padx=(10,10), pady=10, sticky="ew")
     
 
     def make_2PPE_frame(self, twoPPE_frame):

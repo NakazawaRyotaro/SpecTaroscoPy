@@ -25,7 +25,7 @@ sys.path.append(
 )
 
 import RyoPy.defs_for_analysis as rpa
-import RyoPy.defs_for_ctk as rpc
+# import RyoPy.defs_for_ctk as rpc
 from RyoPy.Spectrum import Spectrum
 from RyoPy.MBS_A1 import MBS_A1
 from RyoPy.PlotControl import PlotControl, ImagePlotControl
