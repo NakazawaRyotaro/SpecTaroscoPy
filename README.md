@@ -3,7 +3,7 @@
 
 機能は以下の通りです。
 
-- ARPES解析。Image -> EDC, MDC の変換。軸の変換。MBS A-1装置@IMSの出力データに最適化していますが、他の装置でも最低限使用できるはず。
+- ARPES解析。Image --> EDC, MDC の変換。軸の変換。MBS A-1装置@IMSの出力データに最適化していますが、他の装置でも最低限使用できるはず。
 - 二次微分解析。曲率解析。
 - 逆畳み込み解析。
 - カーブフィッティング解析。
@@ -34,30 +34,34 @@ DOI: 10.48550/arXiv.2509.21246 (https://doi.org/10.48550/arXiv.2509.21246)
 
 (Under the peer review)
 
-## Set up
+## 初期設定 (プログラム起動までの手順)
 では、はじめに以下の初期設定をおねがいします。
 
-(1) Pythonをインストールしてください。
+1. 	Pythonをインストールしてください。
 	このアプリはPythonで開発しました (Python3.12.7)。
 	正直、環境とか難しくて私もよくわかっていませんが...。
-	Visual Stadio Codeインストールして、拡張機能でPythonインストールすれば十分？
+	Visual Stadio Codeインストールして、拡張機能でPythonインストールすれば十分と思われる。
+	
 	あるいは、AnacondaなりPythonの公式ページなりからPythonをダウンロードしてください。
+	(公式Python, AnacondaでPythonをインストールした人は)
+	Pythonのpathを通してください。
 	
-(2) Pythonのpathを通してください。
-	(1)(2)で行き詰まったらAnacondaをインストールするのが早いかも。
-	
-(3) それでは"SpecTaroscoPy" フォルダ --> 	"main.py" をVisual Studio Codeなどで実行してください。
+1.	それでは"SpecTaroscoPy" フォルダ --> "src" フォルダ --> "main.py" をVisual Studio Codeなどで実行してください。
 
-(4) おそらく、moduleがないよっていうエラーが出るので、指示にしたがってpip installしてください。
-	たとえば下記をpip installすることになると思います。
+1.	出力にmoduleがないよっていうエラーが出る (Visual Stadio Codeの場合、ターミナルにModuleNotFoundErrorがでるはず) 。
+	Findできなかったモジュールをターミナルでpip installしていく。
+	ターミナルに、
+	pip install XXX
+	と打ってエンター。
+	たとえば下記のモジュールがないってエラーを吐いてきます。
 	- customtkinter
 	- mpmath
-	など。
 	
-(5) "SpecTaroscoPy - Launcher" windowが出たら成功です。
+1.	"SpecTaroscoPy - Launcher" windowが出たら成功です。
 	これ以降は、"SpecTaroscoPy" フォルダ の "SpecTaroscoPy.bat" のクリックでLauncherを起動できるようになります (Win)。
 	毎回、*.py fileをVS codeなどで実行してもよいです (Win/macOS)。
 
+1.	Launcherで所望の解析方法のボタンを押して解析スタート！それぞれの解析アプリの使い方は説明書（manual.pdf）を参考に。
 
 ## 連絡先
 誤植・バグなどがあれば 

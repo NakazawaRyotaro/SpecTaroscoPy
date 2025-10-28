@@ -547,6 +547,9 @@ class Spectrum:
         elif fitting_func == "Polylog + Gauss":
             y_fitting_full_temp = rpa.make_lincom_of_polylog_and_gauss(self.x, *p0)
             y_fitting_temp =      rpa.make_lincom_of_polylog_and_gauss(x_fitting, *p0)
+        elif fitting_func == "Polylog + Triple Gauss":
+            y_fitting_full_temp = rpa.make_lincom_of_polylog_and_three_gauss(self.x, *p0)
+            y_fitting_temp =      rpa.make_lincom_of_polylog_and_three_gauss(x_fitting, *p0)
         elif fitting_func == "Fermi-edge":
             y_fitting_full_temp = rpa.make_fermi_edge_function(self.x, *p0)
             y_fitting_temp =      rpa.make_fermi_edge_function(x_fitting, *p0)
@@ -590,7 +593,7 @@ class Spectrum:
         axs[1].legend()
         plt.show()
 
-    def fit_spectrum_core(self, x_data, y_data, func, initial_params, bounds=None, fixed_params_mask=None):
+    def fit_spectrum_core(self, x_data, y_data, func, initial_params, bounds=None, fixed_params_mask=None, instrum_func_type=None, instrumental_params=[]):
         """
         カスタムフィッティング関数
 
@@ -664,10 +667,11 @@ class Spectrum:
                     plots_a_result=True):
 
         self.fitting_func=func_choice
-        
+
         # fitting functions
         func_dict= {'Polylogarithm': rpa.make_Menzel2021_fitting_function, 
                     'Polylog + Gauss': rpa.make_lincom_of_polylog_and_gauss, 
+                    'Polylog + Triple Gauss': rpa.make_lincom_of_polylog_and_three_gauss,
                     'Fermi-edge': rpa.make_fermi_edge_function,
                     'Single Gaussian': rpa.make_gaussian,
                     'Double Gaussian': rpa.make_two_gaussian,
@@ -825,7 +829,8 @@ class Spectrum:
                             writer.writerow(["Reference: D. Menzel, et al., ACS Appl. Mater. and Interfaces 13, 43540 (2021)"])
                         elif self.fitting_func == "lincom_of_polylog_and_gauss":
                             writer.writerow(["Reference: D. Menzel, et al., ACS Appl. Mater. and Interfaces 13, 43540 (2021)"])
-
+                        elif self.fitting_func == "lincom_of_polylog_and_three_gauss":
+                            writer.writerow(["Reference: D. Menzel, et al., ACS Appl. Mater. and Interfaces 13, 43540 (2021)"])
                         writer.writerow([f"Initial Params\t{' '.join(map(str, self.p0))}"])
                         writer.writerow([f"Fixed Paramrs\t{' '.join(map(str, self.fixed_params_mask))}"])
                         writer.writerow([f"Lower Limit\t{' '.join(map(str, self.bound[0]))}"])

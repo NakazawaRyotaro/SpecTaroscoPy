@@ -194,6 +194,7 @@ class AnalyzeDataFrame(customtkinter.CTkScrollableFrame): # GUI中部
                                                     values=["Fermi-edge", 
                                                             "Polylogarithm", 
                                                             "Polylog + Gauss", 
+                                                            "Polylog + Triple Gauss", 
                                                             "Single Gaussian", 
                                                             "Double Gaussian",
                                                             "Triple Gaussian"
@@ -416,6 +417,11 @@ class AnalyzeDataFrame(customtkinter.CTkScrollableFrame): # GUI中部
                 "size": (440, 55),
                 "text": r"Reference: D. Menzel et al., ACS Appl. Mater. Interfaces 13, 43540 (2021)",
             },
+            "Polylog + Triple Gauss": {
+                "path": "linearcombination_of_polylogarithm_and_gaussian.png",
+                "size": (440, 55),
+                "text": r"Reference: D. Menzel et al., ACS Appl. Mater. Interfaces 13, 43540 (2021)",
+            },
             "Fermi-edge": {
                 "path": "Fermi_edge_function.png",
                 "size": (360, 65),
@@ -514,7 +520,7 @@ class AnalyzeDataFrame(customtkinter.CTkScrollableFrame): # GUI中部
             # polylogarithmを選択した場合の処理
             print("polylogarithm functionとGaussianの線形結合を選択しました。")
 
-            self.fitting_params_label_lst = ["Ev", "Et", "a0", "E0", "FWHM", "a1", "bg"] # label name
+            self.fitting_params_label_lst = ["Ev", "Et", "a0", "E1", "FWHM1", "a1", "bg"] # label name
             self.fitting_params_text_lst = ["VBM energy of polylogarithm", 
                                             "Inverse slope of tail states of polylogarithm", 
                                             "Intensity of polylogarithm",
@@ -526,7 +532,32 @@ class AnalyzeDataFrame(customtkinter.CTkScrollableFrame): # GUI中部
             self.fitting_params_initial_val_lst = [None, None, None, None, None, None, "0"] # 初期値
             self.fixs_params_initial_val_lst = [False, False, False, False, False, False, True] # 初期値で固定するか？
 
-        
+        # polylogarithmのパラメータ
+        if self.fitting_func == "Polylog + Triple Gauss":
+            # Spectrum.pyで使用される変数名に書き換え
+
+            # polylogarithmを選択した場合の処理
+            print("polylogarithm functionとGaussianの線形結合を選択しました。")
+
+            self.fitting_params_label_lst = ["Ev", "Et", "a0", "E1", "FWHM1", "a1", "E2", "FWHM2", "a2", "E3", "FWHM3", "a3", "bg"] # label name
+            self.fitting_params_text_lst = ["VBM energy of polylogarithm", 
+                                            "Inverse slope of tail states of polylogarithm", 
+                                            "Intensity of polylogarithm",
+                                            "Energy at center of Gaussian1",
+                                            "FWHM of Gaussian1",
+                                            "Peak intensity of Gaussian1",
+                                            "Energy at center of Gaussian2",
+                                            "FWHM of Gaussian2",
+                                            "Peak intensity of Gaussian2",
+                                            "Energy at center of Gaussian3",
+                                            "FWHM of Gaussian3",
+                                            "Peak intensity of Gaussian3",
+                                            "Background (Constant)"
+                                            ] # 説明文
+            self.fitting_params_initial_val_lst = [None, None, None, None, None, None, None, None, None, None, None, None, "0"] # 初期値
+            self.fixs_params_initial_val_lst = [False, False, False, False, False, False, False, False, False, False, False, False, True] # 初期値で固定するか？
+
+
         if self.fitting_func == "Fermi-edge":
             print("Fermi-edge functionを選択しました。")
 
@@ -644,6 +675,13 @@ class AnalyzeDataFrame(customtkinter.CTkScrollableFrame): # GUI中部
             maxbox.grid(row=2+i, column=5, padx=(0,10), pady=(0,5), sticky="ew")
             self.param_max_list.append(maxbox)
 
+        # ラベル
+        label = customtkinter.CTkLabel(master=self.coefficient_frame, text=f"Instrum Func", width=80)
+        label.grid(row=3+i, column=0, padx=0, pady=(5,5), sticky="ew")
+        
+        label = customtkinter.CTkLabel(master=self.coefficient_frame, text=f"FWHM", width=80)
+        label.grid(row=4+i, column=0, padx=0, pady=(0,5), sticky="ew")
+
         # function form
         self.display_image()
 
@@ -758,7 +796,6 @@ class AnalyzeDataFrame(customtkinter.CTkScrollableFrame): # GUI中部
             self.results_value_labels.append(results_value_label)
 
     def fit_edcs(self):
-
         # LoadDataFrameのインスタンスにアクセス（App経由）
         load_data_frame = self.app.load_data_frame
         combo = load_data_frame.y_legend_combo

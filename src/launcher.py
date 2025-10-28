@@ -19,15 +19,6 @@ sys.path.append(str(SRC_PATH))                         # str()で文字列に変
 
 from RyoPy import defs_for_analysis as rpa
 
-# classをインポートして実行する方法を取っていたが、subprocess.Popenで別python fileを実行する方針に切り替えた。
-# from setting import App as SettingApp
-# from deconvolution import App as DeconvolutionApp
-# from fitting import App as FittingApp
-# from second_derivative import App as SecondDerivativeApp
-# from arpes_image import App as ARPESImageApp
-# from curvature import App as CurvatureApp
-
-
 # srcディレクトリを取得
 SRC_DIRECTORY = Path(__file__).resolve().parent
 # print(CURRENT_PATH)

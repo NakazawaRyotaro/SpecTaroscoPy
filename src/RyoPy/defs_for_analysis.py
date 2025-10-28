@@ -375,6 +375,45 @@ def make_lincom_of_polylog_and_gauss(x, x_vbm_polylog, inverse_slope_of_tail_sta
     # polylogとgaussianの線形結合を取る
     return y_fdi + y_gauss + bg
 
+def make_lincom_of_polylog_and_three_gauss(x, x_vbm_polylog, inverse_slope_of_tail_states_polylog, a0_polylog, 
+                                        x_center_gauss1, x_fwhm_gauss1, peak_int_gauss1, 
+                                        x_center_gauss2, x_fwhm_gauss2, peak_int_gauss2, 
+                                        x_center_gauss3, x_fwhm_gauss3, peak_int_gauss3, 
+                                        bg=0, A=-1):
+    """
+    Calculate the fitting function of linearcombination of Gaussians and polylogarithm [equation (3) in Dorothee et al., ACS Appl. Mater. Interfaces 2021, 13, 43540−43553 (2022)].
+    
+    Args:
+        x (ndarray): x axis。エネルギー
+        
+        x_vbm_polylog (float): VBMエネルギー
+        inverse_slope_of_tail_states_polylog (float): テール準位の傾きの逆数
+        a0_polylog (float): y強度の定数項
+        A (float): 指数関数の乗数の時の強度。 **default** A=-1
+
+        x_center_of_gauss (float): Gaussianの中心のエネルギー
+        x_fwhm_gauss (float): Gaussianの半値全幅
+        peak_int_of_gauss (float): Gaussianのピーク強度
+        
+        bg (float): background
+    Returns:
+        y_fdi (ndarray): Menzel 2021のfitting関数
+    """
+
+    y_fdi=np.zeros(len(x))
+    z = make_exponential_tail_states(x, A, x_vbm_polylog, inverse_slope_of_tail_states_polylog)
+    # 多重対数関数Li_3/2の生成
+    for i in range(len(x)):
+        y_fdi[i]= -a0_polylog/2*np.sqrt(inverse_slope_of_tail_states_polylog*math.pi)*mp.re(mp.polylog(0.5, z[i])) # mp.reでreal partを取得できるらしい
+    # y_fdi*= a0_polylog
+    
+    # gaussianの生成
+    y_gauss1 = make_gaussian(x, x_center_gauss1, x_fwhm_gauss1, peak_int_gauss1)
+    y_gauss2 = make_gaussian(x, x_center_gauss2, x_fwhm_gauss2, peak_int_gauss2)
+    y_gauss3 = make_gaussian(x, x_center_gauss3, x_fwhm_gauss3, peak_int_gauss3)
+    # polylogとgaussianの線形結合を取る
+    return y_fdi + y_gauss1 + y_gauss2 + y_gauss3 + bg
+
 def make_fermi_edge_function(x, T, E_F, fwhm, a_0, bg=0, k_B=8.617333262e-5):
     """ 
     fermi edgeのPESスペクトルをシミュレーション
