@@ -530,7 +530,6 @@ class Spectrum:
         """
         手動で調整 (fittingの初期条件の探索)
         """
-        self.fitting_func = fitting_func
 
         # define the energy range これは練習なので self.にしない
         x_fitting = self.x[rpa.get_idx_of_the_nearest(self.x, x_fitting_min): rpa.get_idx_of_the_nearest(self.x, x_fitting_max)]
@@ -550,9 +549,9 @@ class Spectrum:
         elif fitting_func == "Polylog + Triple Gauss":
             y_fitting_full_temp = rpa.make_lincom_of_polylog_and_three_gauss(self.x, *p0)
             y_fitting_temp =      rpa.make_lincom_of_polylog_and_three_gauss(x_fitting, *p0)
-        elif fitting_func == "Fermi-edge":
-            y_fitting_full_temp = rpa.make_fermi_edge_function(self.x, *p0)
-            y_fitting_temp =      rpa.make_fermi_edge_function(x_fitting, *p0)
+        elif fitting_func == "Fermi–edge (conv. Gauss)":
+            y_fitting_full_temp = rpa.make_fermi_edge_function_with_convoluted_gaussian(self.x, *p0)
+            y_fitting_temp =      rpa.make_fermi_edge_function_with_convoluted_gaussian(x_fitting, *p0)
         elif fitting_func == "Single Gaussian":
             y_fitting_full_temp = rpa.make_gaussian(self.x, *p0)
             y_fitting_temp =      rpa.make_gaussian(x_fitting, *p0)
@@ -607,7 +606,7 @@ class Spectrum:
             キーを指定。'gauss'など。
                     {'Polylogarithm': rpa.make_Menzel2021_fitting_function, 
                     'polylog + gauss': rpa.make_lincom_of_polylog_and_gauss, 
-                    'Fermi-edge': rpa.make_fermi_edge_function,
+                    'Fermi-edge': rpa.make_fermi_edge_function_with_convoluted_gaussian,
                     'gauss': rpa.make_gaussian}
         initial_params: list
             パラメータの初期値リスト。
@@ -660,22 +659,23 @@ class Spectrum:
 
     def fit_spectrum(self,
                     x_fitting_min, x_fitting_max,
-                    func_choice,
+                    fitting_func_name,
                     initial_params,
                     bounds,
                     fixed_params_mask,
                     plots_a_result=True):
 
-        self.fitting_func=func_choice
+        self.fitting_func=fitting_func_name
 
         # fitting functions
         func_dict= {'Polylogarithm': rpa.make_Menzel2021_fitting_function, 
                     'Polylog + Gauss': rpa.make_lincom_of_polylog_and_gauss, 
                     'Polylog + Triple Gauss': rpa.make_lincom_of_polylog_and_three_gauss,
-                    'Fermi-edge': rpa.make_fermi_edge_function,
+                    'Fermi–edge (conv. Gauss)': rpa.make_fermi_edge_function_with_convoluted_gaussian,
                     'Single Gaussian': rpa.make_gaussian,
                     'Double Gaussian': rpa.make_two_gaussian,
                     'Triple Gaussian': rpa.make_three_gaussian}
+
 
         # fitting region
         self.x_fitting_min = x_fitting_min

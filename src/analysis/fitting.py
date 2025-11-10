@@ -68,7 +68,7 @@ class App(customtkinter.CTk):
         if has_WINDOW_height and has_WINDOW_WIDTH:
             self.geometry(f"{WINDOW_WIDTH}x{WINDOW_height}")
         else:
-            self.geometry(f"850x800") # 横x縦
+            self.geometry(f"850x1200") # 横x縦
         
         # title
         self.title("SpecTaroscoPy — Fitting")
@@ -102,7 +102,6 @@ class App(customtkinter.CTk):
         self.load_data_frame.grid(row=0, column=0, padx=10, pady=(10,10), sticky="nsew", columnspan=columnspan)
 
         # 2つ目のフレーム設定
-        # self.analyze_data_frame = AnalyzeDataFrame(master=self, spectrum=self.load_data_frame.spectrum) 
         self.analyze_data_frame = AnalyzeDataFrame(master=self, spectrum=self.load_data_frame.spectrum, app=self)
         self.analyze_data_frame.grid(row=1, column=0, padx=10, pady=(0,10), sticky="nsew", columnspan=columnspan)
 
@@ -121,6 +120,7 @@ class App(customtkinter.CTk):
 
         for i in range(columnspan-2):
             customtkinter.CTkLabel(master=self, text=' ', font=self.fonts, width=120).grid(row=100, column=i+2, columnspan=1, padx=(0,10), pady=(0,10), sticky="nw")
+
 
     def open_manual_button_callback(self):
         # 現在のスクリプトの親ディレクトリを取得
@@ -191,7 +191,7 @@ class AnalyzeDataFrame(customtkinter.CTkScrollableFrame): # GUI中部
         x_set_param_label = customtkinter.CTkLabel(master=self, text='Function', font=self.fonts)
         x_set_param_label.grid(row=1, column=0, columnspan=1, padx=10, pady=(0,10), sticky="ew")
         self.fitting_func_combo = customtkinter.CTkComboBox(master=self, font=self.fonts,
-                                                    values=["Fermi-edge", 
+                                                    values=["Fermi–edge (conv. Gauss)", 
                                                             "Polylogarithm", 
                                                             "Polylog + Gauss", 
                                                             "Polylog + Triple Gauss", 
@@ -205,7 +205,7 @@ class AnalyzeDataFrame(customtkinter.CTkScrollableFrame): # GUI中部
         # paramsのラベルとテキストボックス
         
         # Range
-        customtkinter.CTkLabel(master=self, text='X Range', font=self.fonts).grid(row=2, column=0, columnspan=1, padx=10, pady=(0,10), sticky="ew")
+        customtkinter.CTkLabel(master=self, text='X Range', font=self.fonts).grid(row=2, column=0, columnspan=1, padx=10, pady=(0,0), sticky="ew")
         # x_min
         customtkinter.CTkLabel(master=self, text='X Min').grid(row=3, column=0, padx=10, pady=(0,5), sticky="ew")
         self.x_min_entry = customtkinter.CTkEntry(master=self, placeholder_text="Min X", width=120, font=self.fonts)
@@ -217,19 +217,79 @@ class AnalyzeDataFrame(customtkinter.CTkScrollableFrame): # GUI中部
         self.x_max_entry.grid(row=4, column=1, padx=10, pady=(0,5), sticky="ew")
 
         customtkinter.CTkLabel(master=self, text='', font=self.fonts).grid(row=4, column=2, padx=10, pady=(0,5), sticky="ew")
-        customtkinter.CTkLabel(master=self, text='', font=self.fonts, width=500).grid(row=4, column=3, columnspan=4, padx=10, pady=(0,5), sticky="ew")
+        customtkinter.CTkLabel(master=self, text='', font=self.fonts, width=300).grid(row=4, column=3, columnspan=4, padx=10, pady=(0,5), sticky="ew")
     
         # --- CTkTabview を追加 ---
-        self.coefficient_tabview = customtkinter.CTkTabview(master=self)
-        self.coefficient_tabview.grid(row=5, column=0, columnspan=10, padx=(10,10), pady=(10,10), sticky="nw")
-        self.coefficient_tabview.add("Coefficients")
-        self.coefficient_tabview.add("EDCs Fitting")
-
+        self.fitting_tabview = customtkinter.CTkTabview(master=self)
+        self.fitting_tabview.grid(row=5, column=0, columnspan=10, padx=(10,10), pady=(10,10), sticky="nwse")
 
         # --- Coefficients タブ ---
-        self.coefficient_frame = self.coefficient_tabview.tab("Coefficients")
-        self.coefficient_frame.configure(fg_color='gray20', corner_radius=10)
+        self.fitting_tabview.add("Coefficients")
+        self.make_coefficients_tab()
+        
+        # --- EDCs fitting タブ ---
+        self.fitting_tabview.add("EDCs Fitting")
+        self.make_edcs_fit_tab()
 
+        # --- 装置関数ブロードニングタブ ---
+        self.fitting_tabview.add("Instrum. Func.")
+        self.make_instrum_func_tab()
+
+    def make_instrum_func_tab(self):
+        self.instrum_func_frame = self.fitting_tabview.tab("Instrum. Func.")
+        self.instrum_func_frame.configure(fg_color='gray20', corner_radius=10)
+
+        # switch
+        switch_value_instrum_func = customtkinter.BooleanVar() # チェックボックスの変数を作成し、初期値をTrueに設定
+        switch_value_instrum_func.set(False)
+        self.switch_instrum_func = customtkinter.CTkSwitch(self.instrum_func_frame, text=f"Instrum. Func. Broadening", variable=switch_value_instrum_func, width=200)
+        self.switch_instrum_func.grid(row=0, column=0,columnspan=2, padx=(25, 5), pady=(10,10), sticky="ew")
+
+        customtkinter.CTkLabel(master=self.instrum_func_frame, text='Function', width=100, font=self.fonts).grid(row=1, column=0, padx=(10, 10), pady=(10,10), sticky="ew")
+        self.instrum_func_combo = customtkinter.CTkComboBox(master=self.instrum_func_frame, font=self.fonts,
+                                                    values=[
+                                                            "Gaussian", 
+                                                            "Import"
+                                                            ],
+                                                    command=self.choice_instrum_func_combo_callback
+                                                    )
+        self.instrum_func_combo.grid(row=1, column=1, padx=(10, 5), pady=(10, 10), sticky="ew")
+        # self.has_chosed_instrum_func = True
+        self.choice_instrum_func_combo_callback(self.instrum_func_combo.get())
+
+    def choice_instrum_func_combo_callback(self, choice):
+        # ラベルがあれば削除
+        self.destroy_params(self.instrum_func_frame, upper_limit_row=2)
+
+        # プルダウンメニューで選択された値を取得
+        self.instrum_func = choice
+        print(f"instrum_func: {self.instrum_func}")
+        # instrum_funcごとの設定
+        if self.instrum_func == "Gaussian":
+            # Gaussianを選択した場合の処理
+            print("Gaussian functionを選択しました。")
+            # ここにGaussianのパラメータ設定のコードを追加
+            customtkinter.CTkLabel(master=self.instrum_func_frame, text='Symbol', width=100).grid(row=2, column=0, columnspan=1, padx=(10,5), pady=(0,10), sticky="ew")
+            customtkinter.CTkLabel(master=self.instrum_func_frame, text='Value', width=100).grid(row=2, column=1, columnspan=1, padx=(10,5), pady=(0,10), sticky="ew")
+            customtkinter.CTkLabel(master=self.instrum_func_frame, text='FWHM', width=100).grid(row=3, column=0, columnspan=1, padx=(10,5), pady=(0,10), sticky="ew")
+            customtkinter.CTkEntry(master=self.instrum_func_frame, placeholder_text='eV', width=100, font=self.fonts).grid(row=3, column=1, columnspan=1, padx=(10,5), pady=(0,10), sticky="ew")
+
+        elif self.instrum_func == "Import":
+            # Importを選択した場合の処理
+            print("Importを選択しました。")
+            # ここにImportのパラメータ設定のコードを追加
+            self.button_import_instrum = customtkinter.CTkButton(self.instrum_func_frame, command=self.save_fit_edcs_button_callback, text="Import", font=self.fonts)
+            self.button_import_instrum.grid(row=2, column=1, padx=(10,5), pady=(0,10), sticky="ew")
+            customtkinter.CTkLabel(master=self.instrum_func_frame, text='X Label', width=100).grid(row=3, column=0, columnspan=1, padx=(10,5), pady=(0,5), sticky="ew")
+            customtkinter.CTkEntry(master=self.instrum_func_frame, placeholder_text='eV', width=100, font=self.fonts).grid(row=3, column=1, columnspan=1, padx=(10,5), pady=(0,5), sticky="ew")
+            customtkinter.CTkLabel(master=self.instrum_func_frame, text='Y Label', width=100).grid(row=4, column=0, columnspan=1, padx=(10,5), pady=(0,5), sticky="ew")
+            customtkinter.CTkEntry(master=self.instrum_func_frame, placeholder_text='eV', width=100, font=self.fonts).grid(row=4, column=1, columnspan=1, padx=(10,5), pady=(0,5), sticky="ew")
+
+
+    def make_coefficients_tab(self):
+        self.coefficient_frame = self.fitting_tabview.tab("Coefficients")
+
+        self.coefficient_frame.configure(fg_color='gray20', corner_radius=10)
         customtkinter.CTkLabel(master=self.coefficient_frame, text='Symbol', width=80).grid(row=1, column=0, columnspan=1, padx=(10, 5), pady=(10,10), sticky="ew")
         customtkinter.CTkLabel(master=self.coefficient_frame, text='Initial Value', width=100).grid(row=1, column=1, columnspan=1, padx=(5,5), pady=(10,10), sticky="ew")
         customtkinter.CTkLabel(master=self.coefficient_frame, text='Fix', width=15).grid(row=1, column=2, padx=0, pady=(10,10), sticky="w")
@@ -237,49 +297,52 @@ class AnalyzeDataFrame(customtkinter.CTkScrollableFrame): # GUI中部
         customtkinter.CTkLabel(master=self.coefficient_frame, text='Max', width=100).grid(row=1, column=5, columnspan=1, padx=5, pady=(10,10), sticky="ew")
         customtkinter.CTkLabel(master=self.coefficient_frame, text='Fit Result', width=100).grid(row=1, column=6, columnspan=1, padx=(5,10), pady=(10,10), sticky="we")
 
+    def make_edcs_fit_tab(self):
         columnspan=5
-        # --- EDCs Fitting タブ ---
-        self.fit_edcs_frame = self.coefficient_tabview.tab("EDCs Fitting")
-        self.fit_edcs_frame.configure(fg_color='gray20', corner_radius=10)
 
-        # import button
-        customtkinter.CTkLabel(master=self.fit_edcs_frame, text='New Axis Info', width=120).grid(row=0, column=0, columnspan=1, padx=10, pady=(15,5), sticky="we")
-        self.button_imort_x_axis_info_for_edcs_fit = customtkinter.CTkButton(self.fit_edcs_frame, command=self.import_x_axis_info_for_edcs_fit_callback, text="Import", font=self.fonts, width=120)
-        self.button_imort_x_axis_info_for_edcs_fit.grid(row=0, column=1, columnspan=1, padx=(10,10), pady=(15,5), sticky="ew")
-        # x label
-        customtkinter.CTkLabel(master=self.fit_edcs_frame, text='New Axis Label', width=120).grid(row=1, column=0, columnspan=1, padx=10, pady=(0,5), sticky="we")
-        self.entry_fit_edcs_x_label = customtkinter.CTkEntry(master=self.fit_edcs_frame, placeholder_text='Label Name', width=120, font=self.fonts)
-        self.entry_fit_edcs_x_label.insert(0, 'Data Number')
-        self.entry_fit_edcs_x_label.grid(row=1, column=1, padx=10, pady=(0,5), sticky="ew", columnspan=2)
-        # x list
-        customtkinter.CTkLabel(master=self.fit_edcs_frame, text='New Axis Values', width=120).grid(row=2, column=0, columnspan=1, padx=10, pady=(0,15), sticky="we")
-        self.entry_fit_edcs_x_lst = customtkinter.CTkEntry(master=self.fit_edcs_frame, placeholder_text='Values Separated by Single Spaces', font=self.fonts, width=595)
-        self.entry_fit_edcs_x_lst.grid(row=2, column=1, padx=10, pady=(0,15), sticky="ew", columnspan=columnspan, rowspan=1)
+        # --- EDCs Fitting タブ ---
+        self.fit_edcs_frame = self.fitting_tabview.tab("EDCs Fitting")
+        self.fit_edcs_frame.configure(fg_color='gray20', corner_radius=10)
 
         # switch
         switch_value_edcs_fit = customtkinter.BooleanVar() # チェックボックスの変数を作成し、初期値をTrueに設定
         switch_value_edcs_fit.set(False)
         self.switch_edcs_fit = customtkinter.CTkSwitch(self.fit_edcs_frame, text=f"Fit EDCs", variable=switch_value_edcs_fit, width=120)
-        self.switch_edcs_fit.grid(row=4, column=0,columnspan=1, padx=(15,10), pady=(0,5), sticky="ew")
+        self.switch_edcs_fit.grid(row=0, column=0,columnspan=1, padx=(25,10), pady=(10,5), sticky="ew")
 
         switch_value_edcs_fit_peaks = customtkinter.BooleanVar()
         switch_value_edcs_fit_peaks.set(False)
         self.swich_plot_edcs_peaks = customtkinter.CTkSwitch(self.fit_edcs_frame, text="Plot Peak X", variable=switch_value_edcs_fit_peaks, width=120)
-        self.swich_plot_edcs_peaks.grid(row=5, column=0, columnspan=1, padx=(15,10), pady=(0,5), sticky="ew")
+        self.swich_plot_edcs_peaks.grid(row=1, column=0, columnspan=1, padx=(25,10), pady=(0,5), sticky="ew")
 
         switch_value_edcs_fit_x_axis_reverse = customtkinter.BooleanVar()
         switch_value_edcs_fit_x_axis_reverse.set(False)
         self.switch_edcs_fit_x_axis_reverse = customtkinter.CTkSwitch(self.fit_edcs_frame, text="Reverse X", variable=switch_value_edcs_fit_x_axis_reverse, width=120)
-        self.switch_edcs_fit_x_axis_reverse.grid(row=6, column=0, columnspan=1, padx=(15,10), pady=(0,15), sticky="ew")
+        self.switch_edcs_fit_x_axis_reverse.grid(row=2, column=0, columnspan=1, padx=(25,10), pady=(0,5), sticky="ew")
+
+        # import button
+        customtkinter.CTkLabel(master=self.fit_edcs_frame, text='New Axis Info', width=120).grid(row=10, column=0, columnspan=1, padx=10, pady=(10,5), sticky="we")
+        self.button_imort_x_axis_info_for_edcs_fit = customtkinter.CTkButton(self.fit_edcs_frame, command=self.import_x_axis_info_for_edcs_fit_callback, text="Import", font=self.fonts, width=120)
+        self.button_imort_x_axis_info_for_edcs_fit.grid(row=10, column=1, columnspan=1, padx=(10,10), pady=(10,5), sticky="ew")
+        # x label
+        customtkinter.CTkLabel(master=self.fit_edcs_frame, text='New Axis Label', width=120).grid(row=11, column=0, columnspan=1, padx=10, pady=(0,5), sticky="we")
+        self.entry_fit_edcs_x_label = customtkinter.CTkEntry(master=self.fit_edcs_frame, placeholder_text='Label Name', width=120, font=self.fonts)
+        self.entry_fit_edcs_x_label.insert(0, 'Data Number')
+        self.entry_fit_edcs_x_label.grid(row=11, column=1, padx=10, pady=(0,5), sticky="ew", columnspan=1)
+        # x list
+        customtkinter.CTkLabel(master=self.fit_edcs_frame, text='New Axis Values', width=120).grid(row=12, column=0, columnspan=1, padx=10, pady=(0,5), sticky="we")
+        self.entry_fit_edcs_x_lst = customtkinter.CTkEntry(master=self.fit_edcs_frame, placeholder_text='Values Separated by Single Spaces', font=self.fonts, width=595)
+        self.entry_fit_edcs_x_lst.grid(row=12, column=1, padx=10, pady=(0,5), sticky="ew", columnspan=columnspan, rowspan=1)
 
         # save button
-        self.filename_fit_edcs = customtkinter.CTkEntry(master=self.fit_edcs_frame, placeholder_text='Output Filename', font=self.fonts)
-        self.filename_fit_edcs.grid(row=10, column=0, padx=(10,10), pady=(0,15), sticky="ew", columnspan=2)
+        customtkinter.CTkLabel(master=self.fit_edcs_frame, text='Output Filename', width=120).grid(row=20, column=0, columnspan=1, padx=10, pady=(0,5), sticky="we")
+        self.filename_fit_edcs = customtkinter.CTkEntry(master=self.fit_edcs_frame, placeholder_text='Filename', font=self.fonts)
+        self.filename_fit_edcs.grid(row=20, column=1, padx=(10,10), pady=(0,5), sticky="ew", columnspan=1)
         self.button_save_fit_edcs = customtkinter.CTkButton(self.fit_edcs_frame, command=self.save_fit_edcs_button_callback, text="Save (EDCs Fit)", font=self.fonts)
-        self.button_save_fit_edcs.grid(row=10, column=2, padx=(0,10), pady=(0,15), sticky="ew")
+        self.button_save_fit_edcs.grid(row=21, column=1, padx=(10,10), pady=(0,5), sticky="ew")
 
         for i in range(int(columnspan-2)):
-            customtkinter.CTkLabel(master=self.fit_edcs_frame, text='', width=120).grid(row=0, column=2+i, columnspan=1, padx=10, pady=(15,5), sticky="we")
+            customtkinter.CTkLabel(master=self.fit_edcs_frame, text='', width=120).grid(row=0, column=2+i, columnspan=1, padx=10, pady=(0,5), sticky="we")
 
         # --- 初期設定 ----
         self.choice_fitting_func_combo_callback(self.fitting_func_combo.get())
@@ -332,10 +395,10 @@ class AnalyzeDataFrame(customtkinter.CTkScrollableFrame): # GUI中部
             added_header.append(f'EDCs fitting\t{self.switch_edcs_fit.get()}')
             added_header.append(f'New Axis Values\t{self.entry_fit_edcs_x_lst.get()}')
             added_header.append(f'New Axis Label\t{self.entry_fit_edcs_x_label.get()}')
-            added_header.append(f"Function\t{self.fitting_func}")
-            if self.fitting_func == "polylogarithm":
+            added_header.append(f"Function\t{self.fitting_func_name}")
+            if self.fitting_func_name == "polylogarithm":
                 added_header.append("Reference: D. Menzel, et al., ACS Appl. Mater. and Interfaces 13, 43540 (2021)")
-            elif self.fitting_func == "lincom_of_polylog_and_gauss":
+            elif self.fitting_func_name == "lincom_of_polylog_and_gauss":
                 added_header.append("Reference: D. Menzel, et al., ACS Appl. Mater. and Interfaces 13, 43540 (2021)")
 
             added_header.append(f"Initial Params for first Y data\t{' '.join(map(str, self.p0_edcs_fit))}")
@@ -382,7 +445,6 @@ class AnalyzeDataFrame(customtkinter.CTkScrollableFrame): # GUI中部
             else: # noを選択すれば保存しない
                 print('Aborted.')
 
-
     def create_buttons(self):
         # Graph nowボタン生成
         self.graph_now_button = customtkinter.CTkButton(master=self, command=self.graph_now_button_callback, text="Graph Now", font=self.fonts)
@@ -395,7 +457,6 @@ class AnalyzeDataFrame(customtkinter.CTkScrollableFrame): # GUI中部
         # close figures button
         self.button_close_figs = customtkinter.CTkButton(master=self, command=self.close_figs_button_callback, text="Close Figures", font=self.fonts)
         self.button_close_figs.grid(row=20, column=2, columnspan=1, padx=(0,10), pady=(5,10), sticky="ew")
-
 
     def display_image(self):  # fittingモデルの数式を表示する
 
@@ -422,7 +483,7 @@ class AnalyzeDataFrame(customtkinter.CTkScrollableFrame): # GUI中部
                 "size": (440, 55),
                 "text": r"Reference: D. Menzel et al., ACS Appl. Mater. Interfaces 13, 43540 (2021)",
             },
-            "Fermi-edge": {
+            "Fermi–edge (conv. Gauss)": {
                 "path": "Fermi_edge_function.png",
                 "size": (360, 65),
                 "text": "NOTE: Horizontal axis is kinetic energy.",
@@ -445,10 +506,10 @@ class AnalyzeDataFrame(customtkinter.CTkScrollableFrame): # GUI中部
         }
 
         # 情報が定義されていない fitting_func の場合は処理を抜ける
-        if self.fitting_func not in image_info:
+        if self.fitting_func_name not in image_info:
             return
 
-        info = image_info[self.fitting_func]
+        info = image_info[self.fitting_func_name]
         print('src_path: ', SRC_PATH)
         image_path = os.path.join(SRC_PATH, "img", "fitting", info["path"])
         print(f"image_path: {image_path}")
@@ -498,14 +559,14 @@ class AnalyzeDataFrame(customtkinter.CTkScrollableFrame): # GUI中部
 
     def choice_fitting_func_combo_callback(self, selected_value):
         # プルダウンメニューで選択された値を取得
-        self.fitting_func = self.fitting_func_combo.get()  
+        self.fitting_func_name = self.fitting_func_combo.get()  
 
         # polylogarithmのパラメータ
-        if self.fitting_func == "Polylogarithm":
+        if self.fitting_func_name == "Polylogarithm":
             # polylogarithmを選択した場合の処理
             print("polylogarithm functionを選択しました。")
 
-            self.fitting_params_label_lst = ["Ev", "Et", "a0", "bg"] # label name
+            self.fitting_params_label_lst = ["Ev", "Et", "at", "bg"] # label name
             self.fitting_params_text_lst = ["VBM energy", 
                                             "Inverse slope of tail states", 
                                             "Intensity",
@@ -514,13 +575,13 @@ class AnalyzeDataFrame(customtkinter.CTkScrollableFrame): # GUI中部
             self.fixs_params_initial_val_lst = [False, False, False, True] # 初期値で固定するか？
 
         # polylogarithmのパラメータ
-        if self.fitting_func == "Polylog + Gauss":
+        if self.fitting_func_name == "Polylog + Gauss":
             # Spectrum.pyで使用される変数名に書き換え
 
             # polylogarithmを選択した場合の処理
             print("polylogarithm functionとGaussianの線形結合を選択しました。")
 
-            self.fitting_params_label_lst = ["Ev", "Et", "a0", "E1", "FWHM1", "a1", "bg"] # label name
+            self.fitting_params_label_lst = ["Ev", "Et", "at", "E1", "FWHM1", "a1", "bg"] # label name
             self.fitting_params_text_lst = ["VBM energy of polylogarithm", 
                                             "Inverse slope of tail states of polylogarithm", 
                                             "Intensity of polylogarithm",
@@ -533,13 +594,13 @@ class AnalyzeDataFrame(customtkinter.CTkScrollableFrame): # GUI中部
             self.fixs_params_initial_val_lst = [False, False, False, False, False, False, True] # 初期値で固定するか？
 
         # polylogarithmのパラメータ
-        if self.fitting_func == "Polylog + Triple Gauss":
+        if self.fitting_func_name == "Polylog + Triple Gauss":
             # Spectrum.pyで使用される変数名に書き換え
 
             # polylogarithmを選択した場合の処理
             print("polylogarithm functionとGaussianの線形結合を選択しました。")
 
-            self.fitting_params_label_lst = ["Ev", "Et", "a0", "E1", "FWHM1", "a1", "E2", "FWHM2", "a2", "E3", "FWHM3", "a3", "bg"] # label name
+            self.fitting_params_label_lst = ["Ev", "Et", "at", "E1", "FWHM1", "a1", "E2", "FWHM2", "a2", "E3", "FWHM3", "a3", "bg"] # label name
             self.fitting_params_text_lst = ["VBM energy of polylogarithm", 
                                             "Inverse slope of tail states of polylogarithm", 
                                             "Intensity of polylogarithm",
@@ -557,21 +618,21 @@ class AnalyzeDataFrame(customtkinter.CTkScrollableFrame): # GUI中部
             self.fitting_params_initial_val_lst = [None, None, None, None, None, None, None, None, None, None, None, None, "0"] # 初期値
             self.fixs_params_initial_val_lst = [False, False, False, False, False, False, False, False, False, False, False, False, True] # 初期値で固定するか？
 
+        if self.fitting_func_name == "Fermi–edge (conv. Gauss)":
+            print("Fermi–edge (conv. Gauss) functionを選択しました。")
 
-        if self.fitting_func == "Fermi-edge":
-            print("Fermi-edge functionを選択しました。")
-
-            self.fitting_params_label_lst = ["T", "EF", "FWHM", "a0", "bg"] # label name
+            self.fitting_params_label_lst = ["T", "EF", "FWHM", "a", "b", "bg"] # label name
             self.fitting_params_text_lst = ["Temparature (K)", 
                                             "Fermi Level", 
                                             "FWHM of Instrumental Function", 
-                                            "Intensity", 
+                                            "Intensity (linear slope)", 
+                                            "Intensity (constant)", 
                                             "Background (Constant)"] # 説明文
-            self.fitting_params_initial_val_lst = [300, None, None, None, "0"] # 初期値
-            self.fixs_params_initial_val_lst = [True, False, False, False, True] # 初期値で固定するか？
+            self.fitting_params_initial_val_lst = [300, None, None, 0, None, 0] # 初期値
+            self.fixs_params_initial_val_lst = [True, False, False, True, False, True] # 初期値で固定するか？
 
         # polylogarithmのパラメータ
-        if self.fitting_func == "Single Gaussian":
+        if self.fitting_func_name == "Single Gaussian":
             # Spectrum.pyで使用される変数名に書き換え
 
             # polylogarithmを選択した場合の処理
@@ -587,7 +648,7 @@ class AnalyzeDataFrame(customtkinter.CTkScrollableFrame): # GUI中部
             self.fixs_params_initial_val_lst = [False, False, False, True] # 初期値で固定するか？
     
         # polylogarithmのパラメータ
-        if self.fitting_func == "Double Gaussian":
+        if self.fitting_func_name == "Double Gaussian":
             # Spectrum.pyで使用される変数名に書き換え
 
             # polylogarithmを選択した場合の処理
@@ -606,7 +667,7 @@ class AnalyzeDataFrame(customtkinter.CTkScrollableFrame): # GUI中部
             self.fixs_params_initial_val_lst = [False, False, False, False, False, False, True] # 初期値で固定するか？
 
         # polylogarithmのパラメータ
-        if self.fitting_func == "Triple Gaussian":
+        if self.fitting_func_name == "Triple Gaussian":
             # Spectrum.pyで使用される変数名に書き換え
 
             # polylogarithmを選択した場合の処理
@@ -676,11 +737,11 @@ class AnalyzeDataFrame(customtkinter.CTkScrollableFrame): # GUI中部
             self.param_max_list.append(maxbox)
 
         # ラベル
-        label = customtkinter.CTkLabel(master=self.coefficient_frame, text=f"Instrum Func", width=80)
-        label.grid(row=3+i, column=0, padx=0, pady=(5,5), sticky="ew")
+        # label = customtkinter.CTkLabel(master=self.coefficient_frame, text=f"Instrum Func", width=80)
+        # label.grid(row=3+i, column=0, padx=0, pady=(5,5), sticky="ew")
         
-        label = customtkinter.CTkLabel(master=self.coefficient_frame, text=f"FWHM", width=80)
-        label.grid(row=4+i, column=0, padx=0, pady=(0,5), sticky="ew")
+        # label = customtkinter.CTkLabel(master=self.coefficient_frame, text=f"FWHM", width=80)
+        # label.grid(row=4+i, column=0, padx=0, pady=(0,5), sticky="ew")
 
         # function form
         self.display_image()
@@ -714,7 +775,7 @@ class AnalyzeDataFrame(customtkinter.CTkScrollableFrame): # GUI中部
         x_fitting_max = float(self.x_max_entry.get())
 
         # coefficient (fittingの初期値) をテキストボックスから取得して、手動fittingを行う
-        self.spectrum.fit_spectrum_manually(self.fitting_func, 
+        self.spectrum.fit_spectrum_manually(self.fitting_func_name, 
                                         x_fitting_min, 
                                         x_fitting_max,
                                         p0)
@@ -783,7 +844,7 @@ class AnalyzeDataFrame(customtkinter.CTkScrollableFrame): # GUI中部
         print("Bound conditions:", bounds)
         print("Fixed parameters:", fixed_params_mask)
         # fittingを実行
-        self.spectrum.fit_spectrum(self.x_fitting_min, self.x_fitting_max, self.fitting_func, p0, bounds, fixed_params_mask)
+        self.spectrum.fit_spectrum(self.x_fitting_min, self.x_fitting_max, self.fitting_func_name, p0, bounds, fixed_params_mask)
 
         # print(self.spectrum.popt)
         # resultsを表示
@@ -881,14 +942,14 @@ class AnalyzeDataFrame(customtkinter.CTkScrollableFrame): # GUI中部
             print(len(self.y_lst),len(self.popt_lst_T[0]))
 
             fig, ax = plt.subplots(1, 1, figsize=(4, 3))
-            if self.fitting_func == 'Double Gaussian':
+            if self.fitting_func_name == 'Double Gaussian':
                 ax.scatter(self.y_lst, self.popt_lst_T[0], label="Gaussian peaks", color="tab:blue", s=20)
                 ax.scatter(self.y_lst, self.popt_lst_T[3], label="", color="tab:blue", s=20)
-            elif self.fitting_func == 'Triple Gaussian':
+            elif self.fitting_func_name == 'Triple Gaussian':
                 ax.scatter(self.y_lst, self.popt_lst_T[0], label="Gaussian peaks", color="tab:blue", s=20)
                 ax.scatter(self.y_lst, self.popt_lst_T[3], color="tab:blue", s=20)
                 ax.scatter(self.y_lst, self.popt_lst_T[6], color="tab:blue", s=20)
-            elif self.fitting_func == 'Single Gaussian':
+            elif self.fitting_func_name == 'Single Gaussian':
                 ax.scatter(self.y_lst, self.popt_lst_T[0], label="Gaussian peaks", color="tab:blue", s=20)
             
             ax.set_ylabel("Energy (eV)")

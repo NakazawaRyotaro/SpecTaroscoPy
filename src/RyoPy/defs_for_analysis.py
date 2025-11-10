@@ -414,7 +414,44 @@ def make_lincom_of_polylog_and_three_gauss(x, x_vbm_polylog, inverse_slope_of_ta
     # polylogとgaussianの線形結合を取る
     return y_fdi + y_gauss1 + y_gauss2 + y_gauss3 + bg
 
-def make_fermi_edge_function(x, T, E_F, fwhm, a_0, bg=0, k_B=8.617333262e-5):
+# def make_fermi_edge_function(x, T, E_F, fwhm, a_0, bg=0, k_B=8.617333262e-5):
+#     """ 
+#     fermi edgeのPESスペクトルをシミュレーション
+#     convolutionするときに端の強度が低くなるのを抑えるため、
+#     一度範囲(配列の長さ)を拡張してフェルミディラック分布・装置関数を生成、PESスペクトルを作成する。
+#     そのあとシミュレーションPESスペクトルの配列の長さを元に戻して出力する。
+#     """
+#     print(x)
+#     x_min = np.around(x[0],6)
+#     x_max = np.around(x[-1],6)
+    
+#     step = np.around((x[1]-x[0]), 6)
+#     additional_idx = int(1/step)
+#     start = np.around(x_min - additional_idx*step, 6)
+#     end = np.around(x_max + additional_idx*step, 6)
+#     x_ = np.round(np.arange(start, end+step/10, step), 6)
+#     dif_len_x = len(x)-len(x_)
+#     # x_の作成がうまくいかず、1要素ずれることがあるので調整する。
+#     if dif_len_x % 2 != 1:
+#         x_ = np.append(x_, x_[-1] + np.around(x_, 6))
+
+#     FD =  a_0 / ( 1 + np.exp((x_-E_F)/(k_B*T)) )
+#     x_s = np.round(np.arange(-(len(x_)-1)*step/2, (len(x_)-1)*step/2 + step/10, step), 6)
+#     s = make_gaussian(x_s, 0, fwhm)
+#     y_ = np.convolve(s, FD, mode="same") * step
+#     # x_の作成がうまくいかず、1要素ずれることがあるので調整する。
+#     y = y_[get_idx_of_the_nearest(x_, x_min) : get_idx_of_the_nearest(x_, x_max)+1] + bg
+#     # print(len(y))
+#     # print(len(x))
+#     # plt.plot(x_, FD)
+#     # plt.plot(x, s)
+#     # plt.plot(x_, y_)
+#     # plt.plot(x, y)
+#     # plt.show()
+#     # print(x_)
+#     return y
+
+def make_fermi_edge_function_with_convoluted_gaussian(x, T, E_F, fwhm, a=0, b=1, bg=0, k_B=8.617333262e-5):
     """ 
     fermi edgeのPESスペクトルをシミュレーション
     convolutionするときに端の強度が低くなるのを抑えるため、
@@ -435,7 +472,7 @@ def make_fermi_edge_function(x, T, E_F, fwhm, a_0, bg=0, k_B=8.617333262e-5):
     if dif_len_x % 2 != 1:
         x_ = np.append(x_, x_[-1] + np.around(x_, 6))
 
-    FD =  a_0 / ( 1 + np.exp((x_-E_F)/(k_B*T)) )
+    FD =  (a * x_ + b) / ( 1 + np.exp((x_-E_F)/(k_B*T)) )
     x_s = np.round(np.arange(-(len(x_)-1)*step/2, (len(x_)-1)*step/2 + step/10, step), 6)
     s = make_gaussian(x_s, 0, fwhm)
     y_ = np.convolve(s, FD, mode="same") * step

@@ -1,4 +1,4 @@
-window_width	900.0
+window_width	1500.0
 window_height	1200.0
 
 key_y2	Y Slice Center
