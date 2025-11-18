@@ -178,7 +178,8 @@ def read_labels_from_csv(path_to_csv):
 
 def get_2Ddata_from_csv(path, x_leg, y_leg, plot_spectrum=False): 
     """
-    Import experimental 2D data
+    Import experimental 2D data.
+    いまとなっては非推奨。
 
     Args:
     file_pass (str): 入力ファイルの絶対pass
@@ -216,6 +217,9 @@ def get_2Ddata_from_csv(path, x_leg, y_leg, plot_spectrum=False):
     return sorted_x, sorted_y
 
 def get_2Ddata_from_text_file_auto(path, x_leg, y_leg, plot_spectrum=False):
+    """
+    こっちが推奨。
+    """
     with open(path, encoding="utf-8", errors='replace') as f:
         lines = f.readlines()
 
@@ -259,7 +263,7 @@ def get_2Ddata_from_text_file_auto(path, x_leg, y_leg, plot_spectrum=False):
         data = data.reshape(-1, len(label_list))
     # nan を 0 に置換
     data = np.nan_to_num(data, nan=0.0, posinf=0.0, neginf=0.0)
-    print(data)
+    # print(data)
     df = pd.DataFrame(data, columns=label_list)
 
     # ラベル存在チェック
@@ -314,8 +318,8 @@ def make_three_gaussian(x, x1, fwhm1, y_peak1, x2, fwhm2, y_peak2, x3, fwhm3, y_
     g3 = make_gaussian(x, x3, fwhm3, y_peak3)
     return g1+g2+g3+bg
 
-def make_exponential_tail_states(x, A, x0, xt):
-    return A*np.exp((x - x0)/xt)
+def make_exponential_tail_states(x, A, x0, xt, bg=0):
+    return A*np.exp((x - x0)/xt) + bg
 
 def make_Menzel2021_fitting_function(x, x_vbm_polylog, inverse_slope_of_tail_states_polylog, a0_polylog, bg=0, A=-1):
     """
@@ -451,18 +455,18 @@ def make_lincom_of_polylog_and_three_gauss(x, x_vbm_polylog, inverse_slope_of_ta
 #     # print(x_)
 #     return y
 
-def make_fermi_edge_function_with_convoluted_gaussian(x, T, E_F, fwhm, a=0, b=1, bg=0, k_B=8.617333262e-5):
+def make_fermi_edge_metal_conv_gaussian(x, T, E_F, fwhm, a=0, b=1, bg=0, k_B=8.617333262e-5):
     """ 
     fermi edgeのPESスペクトルをシミュレーション
     convolutionするときに端の強度が低くなるのを抑えるため、
     一度範囲(配列の長さ)を拡張してフェルミディラック分布・装置関数を生成、PESスペクトルを作成する。
     そのあとシミュレーションPESスペクトルの配列の長さを元に戻して出力する。
     """
-    print(x)
+    # print(x)
     x_min = np.around(x[0],6)
     x_max = np.around(x[-1],6)
-    
-    step = np.around((x[1]-x[0]), 6)
+
+    step = abs(np.around((x[1]-x[0]), 6))
     additional_idx = int(1/step)
     start = np.around(x_min - additional_idx*step, 6)
     end = np.around(x_max + additional_idx*step, 6)
@@ -487,6 +491,179 @@ def make_fermi_edge_function_with_convoluted_gaussian(x, T, E_F, fwhm, a=0, b=1,
     # plt.show()
     # print(x_)
     return y
+
+def make_lorentzian(x, x0, fwhm, peak_intensity=1, bg=0):
+    """
+    lorentzianを作ります。ピーク強度はデフォルトでは1です。このとき面積が1になります。
+    Args:
+        x (ndarray): x asis. エネルギー
+        x0 (float): lorentzianのピークエネルギー
+        fwhm (float): lorentzianの半値全幅
+        peak_intensity (float): lorentzianのピーク強度。デフォルトは1です。
+    #xデータ、中心、FWHM, ピーク強度
+    """
+    return peak_intensity/math.pi*(fwhm/2) / ((x - x0)**2 + (fwhm/2)**2) + bg
+
+
+def make_fermi_edge_degenerate_semicon_conv_gauss(x, 
+                                                  at, Ev, Et, # exponential tail states
+                                                  Ec, ac, # CB DOS
+                                                #   x0_lorentz, gamma_lorentz, # lorentzian
+                                                  fwhm_instrum, # gaussian
+                                                  T, x_EF, a_FDD=0, b_FDD=1, # FDD 
+                                                  bg=0, # background
+                                                  intensity_lorentz=1, k_B=8.617333262e-5):
+    ## convolution計算で端を落とさないための拡張
+    x_min = np.around(x[0],6)
+    x_max = np.around(x[-1],6)
+
+    step = abs(np.around((x[1]-x[0]), 6))
+    additional_idx = int(1/step)
+    start = np.around(x_min - additional_idx*step, 6)
+    end = np.around(x_max + additional_idx*step, 6)
+    x_ = np.round(np.arange(start, end+step/10, step), 6)
+    dif_len_x = len(x)-len(x_)
+    # x_の作成がうまくいかず、1要素ずれることがあるので調整する。
+    if dif_len_x % 2 != 1:
+        x_ = np.append(x_, x_[-1] + np.around(x_, 6))
+    ## ここまで拡張
+
+    # フェルミディラック分布
+    y_FDD =  (a_FDD * x_ + b_FDD) / ( 1 + np.exp((x_-x_EF)/(k_B*T)) )
+    # print('y_FDD:', y_FDD)
+
+    # 装置関数用のgaussian作成
+    x_gauss = np.round(np.arange(-(len(x_)-1)*step/2, (len(x_)-1)*step/2 + step/10, step), 6) # 装置関数用のx軸
+    y_gauss = make_gaussian(x_gauss, 0, fwhm_instrum, peak_intensity=1, bg=0)
+    # print('y_gauss:', y_gauss)
+
+    # DOS作成 
+    y_CB = np.zeros(len(x_)) # 初期化
+    y_gap = np.zeros(len(x_)) # 初期化
+    # DOS作成
+    y_CB = ac * np.sqrt(np.clip(-(x_ - Ec), 0, None)) 
+    y_gap = at * np.exp((x_ - Ev)/Et)
+    y_DOS = y_CB + y_gap # 和を取る
+    # print('y_CB_DOS:', y_DOS)
+
+    # y = conv(y, y_lorenz, step=step)
+    y_electron = y_DOS * y_FDD
+
+    # 装置関数でconvolution
+    y_PES = conv(y_electron, y_gauss, step=step)
+    y_PES += bg # backgroundを足す
+    # print('y:', y)
+    return y_PES[get_idx_of_the_nearest(x_, x_min) : get_idx_of_the_nearest(x_, x_max)+1] # 元の長さに戻す
+
+
+def make_fermi_edge_degenerate_semicon_conv_two_gauss(x, 
+                                                  at, Ev, Et, # exponential tail states
+                                                  Ec, ac, # CB DOS
+                                                  fwhm_lifetime, # gaussian lifetime
+                                                  fwhm_instrum, # gaussian instrumental function
+                                                  T, x_EF, a_FDD=0, b_FDD=1, # FDD 
+                                                  bg=0, # background
+                                                  intensity_lorentz=1, k_B=8.617333262e-5):
+    
+    ## convolution計算で端を落とさないための拡張
+    x_min = np.around(x[0],6)
+    x_max = np.around(x[-1],6)
+
+    step = abs(np.around((x[1]-x[0]), 6))
+    additional_idx = int(1/step)
+    start = np.around(x_min - additional_idx*step, 6)
+    end = np.around(x_max + additional_idx*step, 6)
+    x_ = np.round(np.arange(start, end+step/10, step), 6)
+    dif_len_x = len(x)-len(x_)
+    # x_の作成がうまくいかず、1要素ずれることがあるので調整する。
+    if dif_len_x % 2 != 1:
+        x_ = np.append(x_, x_[-1] + np.around(x_, 6))
+    ## ここまで拡張
+
+    # フェルミディラック分布
+    y_FDD =  (a_FDD * x_ + b_FDD) / ( 1 + np.exp((x_-x_EF)/(k_B*T)) )
+    # print('y_FDD:', y_FDD)
+
+    # 装置関数用のgaussian作成
+    x_gauss = np.round(np.arange(-(len(x_)-1)*step/2, (len(x_)-1)*step/2 + step/10, step), 6) # 装置関数用のx軸
+    # y_lifetime = make_gaussian(x_gauss, 0, fwhm_lifetime, peak_intensity=1, bg=0)
+    y_lifetime = make_lorentzian(x_gauss, 0, fwhm_lifetime, peak_intensity=1, bg=0)
+    y_instrum = make_gaussian(x_gauss, 0, fwhm_instrum, peak_intensity=1, bg=0)
+    # print('y_gauss:', y_gauss)
+
+    # DOS作成 
+    y_CB = np.zeros(len(x_)) # 初期化
+    y_gap = np.zeros(len(x_)) # 初期化
+    # DOS作成
+    # y_CB = ac * np.sqrt(np.clip(-(x_ - Ec), 0, None)) # parabolic band
+    y_CB = ac * np.sqrt(np.clip(-(x_ - Ec)*(1+0.2*(x_-Ec)), 0, None))*(1 + 2*0.2*(x_-Ec)) # InNの非放物線バンドに対応
+    y_gap = at * np.exp((x_ - Ev)/Et)
+    y_DOS = y_CB + y_gap # 和を取る
+    y_DOS = conv(y_DOS, y_lifetime, step=step) # 電子のライフタイムぼかし
+    # print('y_CB_DOS:', y_DOS)
+
+    y_electron = y_DOS * y_FDD
+
+    # 装置関数でconvolution
+    y_PES = conv(y_electron, y_instrum, step=step)
+    y_PES += bg # backgroundを足す
+    # print('y:', y)
+    return y_PES[get_idx_of_the_nearest(x_, x_min) : get_idx_of_the_nearest(x_, x_max)+1] # 元の長さに戻す
+
+
+def make_fermi_edge_degenerate_semicon_conv_lorentz_gauss( x, 
+                                        at, Ev, Et, # exponential tail states
+                                        Ec, ac, # CB DOS
+                                        fwhm_lifetime, # gaussian lifetime
+                                        fwhm_instrum, # gaussian instrumental function
+                                        T, x_EF, a_FDD=0, b_FDD=1, # FDD 
+                                        bg=0, # background
+                                        intensity_lorentz=1, k_B=8.617333262e-5):
+    
+    ## convolution計算で端を落とさないための拡張
+    x_min = np.around(x[0],6)
+    x_max = np.around(x[-1],6)
+
+    step = abs(np.around((x[1]-x[0]), 6))
+    additional_idx = int(1/step)
+    start = np.around(x_min - additional_idx*step, 6)
+    end = np.around(x_max + additional_idx*step, 6)
+    x_ = np.round(np.arange(start, end+step/10, step), 6)
+    dif_len_x = len(x)-len(x_)
+    # x_の作成がうまくいかず、1要素ずれることがあるので調整する。
+    if dif_len_x % 2 != 1:
+        x_ = np.append(x_, x_[-1] + np.around(x_, 6))
+    ## ここまで拡張
+
+    # フェルミディラック分布
+    y_FDD =  (a_FDD * x_ + b_FDD) / ( 1 + np.exp((x_-x_EF)/(k_B*T)) )
+    # print('y_FDD:', y_FDD)
+
+    # 装置関数用のgaussian作成
+    x_gauss = np.round(np.arange(-(len(x_)-1)*step/2, (len(x_)-1)*step/2 + step/10, step), 6) # 装置関数用のx軸
+    # y_lifetime = make_gaussian(x_gauss, 0, fwhm_lifetime, peak_intensity=1, bg=0)
+    y_lifetime = make_lorentzian(x_gauss, 0, fwhm_lifetime, peak_intensity=1, bg=0) 
+    y_instrum = make_gaussian(x_gauss, 0, fwhm_instrum, peak_intensity=1, bg=0)
+    # print('y_gauss:', y_gauss)
+
+    # DOS作成 
+    y_CB = np.zeros(len(x_)) # 初期化
+    y_gap = np.zeros(len(x_)) # 初期化
+    # DOS作成
+    y_CB = ac * np.sqrt(np.clip(-(x_ - Ec)*(1+0.2*(x_-Ec)), 0, None))*(1 + 2*0.2*(x_-Ec)) # InNの非放物線バンドに対応
+    y_gap = at * np.exp((x_ - Ev)/Et)
+    y_DOS = y_CB + y_gap # 和を取る
+    y_DOS = conv(y_DOS, y_lifetime, step=step) # 電子のライフタイムぼかし
+    # print('y_CB_DOS:', y_DOS)
+
+    y_electron = y_DOS * y_FDD
+
+    # 装置関数でconvolution
+    y_PES = conv(y_electron, y_instrum, step=step)
+    y_PES += bg # backgroundを足す
+    # print('y:', y)
+    return y_PES[get_idx_of_the_nearest(x_, x_min) : get_idx_of_the_nearest(x_, x_max)+1] # 元の長さに戻す
+
 
 def fit_experimental_data(x_observed, y_observed, 
                           fitting_function, 

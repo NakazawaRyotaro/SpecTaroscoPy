@@ -1,3 +1,8 @@
+####
+# 装置関数を畳み込んでfittingできるように改良中。
+# --> fit_spectrumに引数を渡すところ、Spectrum.pyのfit_spectrum, fit_spectrum_coreの修正が必要
+####
+
 import customtkinter
 import os
 import numpy as np
@@ -191,7 +196,10 @@ class AnalyzeDataFrame(customtkinter.CTkScrollableFrame): # GUI中部
         x_set_param_label = customtkinter.CTkLabel(master=self, text='Function', font=self.fonts)
         x_set_param_label.grid(row=1, column=0, columnspan=1, padx=10, pady=(0,10), sticky="ew")
         self.fitting_func_combo = customtkinter.CTkComboBox(master=self, font=self.fonts,
-                                                    values=["Fermi–edge (conv. Gauss)", 
+                                                    values=["Fermi–edge of metal (conv. Gauss)", 
+                                                            "Fermi–edge of degenerate semicon. (conv. Gauss)",
+                                                            "Fermi–edge of degenerate semicon. (conv. Lorentz and Gauss)", 
+                                                            "Exponential tail",
                                                             "Polylogarithm", 
                                                             "Polylog + Gauss", 
                                                             "Polylog + Triple Gauss", 
@@ -278,13 +286,24 @@ class AnalyzeDataFrame(customtkinter.CTkScrollableFrame): # GUI中部
             # Importを選択した場合の処理
             print("Importを選択しました。")
             # ここにImportのパラメータ設定のコードを追加
-            self.button_import_instrum = customtkinter.CTkButton(self.instrum_func_frame, command=self.save_fit_edcs_button_callback, text="Import", font=self.fonts)
-            self.button_import_instrum.grid(row=2, column=1, padx=(10,5), pady=(0,10), sticky="ew")
+            self.button_open_instrum = customtkinter.CTkButton(self.instrum_func_frame, command=None, text="Open File", font=self.fonts)
+            self.button_open_instrum.grid(row=2, column=1, padx=(10,5), pady=(0,10), sticky="ew")
             customtkinter.CTkLabel(master=self.instrum_func_frame, text='X Label', width=100).grid(row=3, column=0, columnspan=1, padx=(10,5), pady=(0,5), sticky="ew")
-            customtkinter.CTkEntry(master=self.instrum_func_frame, placeholder_text='eV', width=100, font=self.fonts).grid(row=3, column=1, columnspan=1, padx=(10,5), pady=(0,5), sticky="ew")
+            # コンボボックス
+            self.x_legend_instrum_combo = customtkinter.CTkComboBox(self.instrum_func_frame, font=self.fonts,
+                                                        values=["---X Legend---"])
+                                                        # command=self.choice_x_legend_combo_callback)
+            self.x_legend_instrum_combo.grid(row=3, column=1, padx=(10,5), pady=(0,5), sticky="w")
             customtkinter.CTkLabel(master=self.instrum_func_frame, text='Y Label', width=100).grid(row=4, column=0, columnspan=1, padx=(10,5), pady=(0,5), sticky="ew")
-            customtkinter.CTkEntry(master=self.instrum_func_frame, placeholder_text='eV', width=100, font=self.fonts).grid(row=4, column=1, columnspan=1, padx=(10,5), pady=(0,5), sticky="ew")
+            # コンボボックス
+            self.y_legend_instrum_combo = customtkinter.CTkComboBox(self.instrum_func_frame, font=self.fonts,
+                                                        values=["---Y Legend---"])
+                                                        # command=self.choice_y_legend_combo_callback)
+            self.y_legend_instrum_combo.grid(row=4, column=1, padx=(10,5), pady=(0,5), sticky="w")
 
+            # ここにImportのパラメータ設定のコードを追加
+            self.button_load_instrum = customtkinter.CTkButton(self.instrum_func_frame, command=None, text="Load", font=self.fonts)
+            self.button_load_instrum.grid(row=5, column=1, padx=(10,5), pady=(5,10), sticky="ew")
 
     def make_coefficients_tab(self):
         self.coefficient_frame = self.fitting_tabview.tab("Coefficients")
@@ -483,10 +502,25 @@ class AnalyzeDataFrame(customtkinter.CTkScrollableFrame): # GUI中部
                 "size": (440, 55),
                 "text": r"Reference: D. Menzel et al., ACS Appl. Mater. Interfaces 13, 43540 (2021)",
             },
-            "Fermi–edge (conv. Gauss)": {
+            "Exponential tail": {
+                "path": "linearcombination_of_polylogarithm_and_gaussian.png",
+                "size": (440, 55),
+                "text": r"建設中",
+            },
+            "Fermi–edge of metal (conv. Gauss)": {
                 "path": "Fermi_edge_function.png",
                 "size": (360, 65),
-                "text": "NOTE: Horizontal axis is kinetic energy.",
+                "text": "Kinetic Energy → set T > 0; Binding Energy → set T =< 0.",
+            },
+            "Fermi–edge of degenerate semicon. (conv. Gauss)": {
+                "path": "Fermi_edge_function.png",
+                "size": (360, 65),
+                "text": "Kinetic Energy → set T > 0; Binding Energy → set T =< 0.",
+            },
+            "Fermi–edge of degenerate semicon. (conv. Lorentz and Gauss)": {
+                "path": "Fermi_edge_function.png",
+                "size": (360, 65),
+                "text": "Kinetic Energy → set T > 0; Binding Energy → set T =< 0.",
             },
             "Single Gaussian": {
                 "path": "gaussian.png",
@@ -574,8 +608,20 @@ class AnalyzeDataFrame(customtkinter.CTkScrollableFrame): # GUI中部
             self.fitting_params_initial_val_lst = [None, None, None, "0"] # 初期値
             self.fixs_params_initial_val_lst = [False, False, False, True] # 初期値で固定するか？
 
+        elif self.fitting_func_name == "Exponential tail":
+            # Exponentialを選択した場合の処理
+            print("Exponential functionを選択しました。")
+
+            self.fitting_params_label_lst = ["at", "Ev", "Et", "bg"] # label name
+            self.fitting_params_text_lst = ["Coefficient at", 
+                                            "Valence band maximum", 
+                                            "Exponential tail",
+                                            "background"] # 説明文
+            self.fitting_params_initial_val_lst = [None, None, None, "0"] # 初期値
+            self.fixs_params_initial_val_lst = [False, False, False, True] # 初期値で固定するか？
+
         # polylogarithmのパラメータ
-        if self.fitting_func_name == "Polylog + Gauss":
+        elif self.fitting_func_name == "Polylog + Gauss":
             # Spectrum.pyで使用される変数名に書き換え
 
             # polylogarithmを選択した場合の処理
@@ -594,7 +640,7 @@ class AnalyzeDataFrame(customtkinter.CTkScrollableFrame): # GUI中部
             self.fixs_params_initial_val_lst = [False, False, False, False, False, False, True] # 初期値で固定するか？
 
         # polylogarithmのパラメータ
-        if self.fitting_func_name == "Polylog + Triple Gauss":
+        elif self.fitting_func_name == "Polylog + Triple Gauss":
             # Spectrum.pyで使用される変数名に書き換え
 
             # polylogarithmを選択した場合の処理
@@ -618,8 +664,8 @@ class AnalyzeDataFrame(customtkinter.CTkScrollableFrame): # GUI中部
             self.fitting_params_initial_val_lst = [None, None, None, None, None, None, None, None, None, None, None, None, "0"] # 初期値
             self.fixs_params_initial_val_lst = [False, False, False, False, False, False, False, False, False, False, False, False, True] # 初期値で固定するか？
 
-        if self.fitting_func_name == "Fermi–edge (conv. Gauss)":
-            print("Fermi–edge (conv. Gauss) functionを選択しました。")
+        elif self.fitting_func_name == "Fermi–edge of metal (conv. Gauss)":
+            print("Fermi–edge of metal (conv. Gauss) functionを選択しました。")
 
             self.fitting_params_label_lst = ["T", "EF", "FWHM", "a", "b", "bg"] # label name
             self.fitting_params_text_lst = ["Temparature (K)", 
@@ -629,10 +675,97 @@ class AnalyzeDataFrame(customtkinter.CTkScrollableFrame): # GUI中部
                                             "Intensity (constant)", 
                                             "Background (Constant)"] # 説明文
             self.fitting_params_initial_val_lst = [300, None, None, 0, None, 0] # 初期値
-            self.fixs_params_initial_val_lst = [True, False, False, True, False, True] # 初期値で固定するか？
+            self.fixs_params_initial_val_lst = [True, False, False, True, False, False] # 初期値で固定するか？
+
+        elif self.fitting_func_name == "Fermi–edge of degenerate semicon. (conv. Gauss)":
+            print("Fermi–edge of degenerate semicon. (conv. Gauss)を選択しました。")
+            self.fitting_params_label_lst = [
+                                            "at_tail", "Ev_tail", "Et_tail", # exponential tail
+                                            "Ec_CB", "ac_CB", # conduction band
+                                            # "x0_lorentz", "gamma_lorentz", # Lorentzian 
+                                            "FWHM_instrum", # FWHM of instrum
+                                            "T_FDD", "xEF_FDD", "a_FDD", "b_FDD", # FDD
+                                            "bg" # background
+                                            ]
+            
+            self.fitting_params_text_lst = [
+                                            "Intensity of valence band", "Valence Band Maximum", "Inverse slope of tail states",
+                                            "Conduction Band Minimum", 
+                                            "Intensity of conduction band", 
+                                            # "x0 of Lorentzian", "Γ of Lorentzian", 
+                                            "FWHM of Instrumental Function", 
+                                            "Temperature (K)", "Fermi Level (eV)", "Intensity (linear slope) of FDD", "Intensity (constant) of FDD",
+                                            "Background (Constant)"
+                                            ] # 説明文
+            self.fitting_params_initial_val_lst = [
+                                                    None, None, None, # exponential tail
+                                                    None, None, # conduction band
+                                                    # None, None, # Lorentzian
+                                                    None, # FWHM of instrum
+                                                    300, None, 0, 1, # FDD
+                                                    0 # background
+                                                    ] # 初期値
+            self.fixs_params_initial_val_lst = [
+                                                False, False, False, # exponential tail
+                                                False, False, # conduction band
+                                                # False, False, # Lorentzian
+                                                False, # FWHM of instrum
+                                                True, False, True, True, # FDD
+                                                False # background
+                                                ] # 初期値で固定するか？
+
+        elif self.fitting_func_name == "Fermi–edge of metal (conv. Gauss)":
+            print("Fermi–edge of metal (conv. Gauss) functionを選択しました。")
+
+            self.fitting_params_label_lst = ["T", "EF", "FWHM", "a", "b", "bg"] # label name
+            self.fitting_params_text_lst = ["Temparature (K)", 
+                                            "Fermi Level", 
+                                            "FWHM of Instrumental Function", 
+                                            "Intensity (linear slope)", 
+                                            "Intensity (constant)", 
+                                            "Background (Constant)"] # 説明文
+            self.fitting_params_initial_val_lst = [300, None, None, 0, None, 0] # 初期値
+            self.fixs_params_initial_val_lst = [True, False, False, True, False, False] # 初期値で固定するか？
+
+        elif self.fitting_func_name == "Fermi–edge of degenerate semicon. (conv. Lorentz and Gauss)":
+            print("Fermi–edge of degenerate semicon. (conv. Lorentz and Gauss) を選択しました。")
+            self.fitting_params_label_lst = [
+                                            "at_tail", "Ev_tail", "Et_tail", # exponential tail
+                                            "Ec_CB", "ac_CB", # conduction band
+                                            "FWHM_lifetime", # Broadening due to lifetime
+                                            "FWHM_instrum", # FWHM of instrumental function 
+                                            "T_FDD", "xEF_FDD", "a_FDD", "b_FDD", # FDD
+                                            "bg" # background
+                                            ]
+            
+            self.fitting_params_text_lst = [
+                                            "Intensity of valence band", "Valence Band Maximum", "Inverse slope of tail states",
+                                            "Conduction band minimum", 
+                                            "Intensity of conduction band", 
+                                            "FWHM of lifetime broadening",
+                                            "FWHM of instrumental Function", 
+                                            "Temperature (K)", "Fermi Level (eV)", "Intensity (linear slope) of FDD", "Intensity (constant) of FDD",
+                                            "Background (Constant)"
+                                            ] # 説明文
+            self.fitting_params_initial_val_lst = [
+                                                    None, None, None, # exponential tail
+                                                    None, None, # conduction band
+                                                    None, # Broadening due to lifetime
+                                                    None, # Instrumental function
+                                                    300, None, 0, 1, # FDD
+                                                    0 # background
+                                                    ] # 初期値
+            self.fixs_params_initial_val_lst = [
+                                                False, False, False, # exponential tail
+                                                False, False, # conduction band
+                                                False, # Broadening due to lifetime
+                                                False, # Instrumental function
+                                                True, False, True, True, # FDD
+                                                False # background
+                                                ] # 初期値で固定するか？
 
         # polylogarithmのパラメータ
-        if self.fitting_func_name == "Single Gaussian":
+        elif self.fitting_func_name == "Single Gaussian":
             # Spectrum.pyで使用される変数名に書き換え
 
             # polylogarithmを選択した場合の処理
@@ -648,7 +781,7 @@ class AnalyzeDataFrame(customtkinter.CTkScrollableFrame): # GUI中部
             self.fixs_params_initial_val_lst = [False, False, False, True] # 初期値で固定するか？
     
         # polylogarithmのパラメータ
-        if self.fitting_func_name == "Double Gaussian":
+        elif self.fitting_func_name == "Double Gaussian":
             # Spectrum.pyで使用される変数名に書き換え
 
             # polylogarithmを選択した場合の処理
@@ -667,7 +800,7 @@ class AnalyzeDataFrame(customtkinter.CTkScrollableFrame): # GUI中部
             self.fixs_params_initial_val_lst = [False, False, False, False, False, False, True] # 初期値で固定するか？
 
         # polylogarithmのパラメータ
-        if self.fitting_func_name == "Triple Gaussian":
+        elif self.fitting_func_name == "Triple Gaussian":
             # Spectrum.pyで使用される変数名に書き換え
 
             # polylogarithmを選択した場合の処理
@@ -766,19 +899,30 @@ class AnalyzeDataFrame(customtkinter.CTkScrollableFrame): # GUI中部
         # print(input_values)
         
         # 初期条件を抽出
-        for i in range(len(self.fitting_params_label_lst)):
-            p0.append(float(input_values[3*i]))
+        try:
+            for i in range(len(self.fitting_params_label_lst)):
+                p0.append(float(input_values[3*i]))
+        except ValueError:
+            messagebox.showwarning('ValueError!', 'Please enter valid initial parameter values.')
+            return
+        
         print("Parameters:", p0)
 
         # energy rangeをテキストボックスから取得してインスタンス変数にする
-        x_fitting_min = float(self.x_min_entry.get())
-        x_fitting_max = float(self.x_max_entry.get())
+        try:
+            x_fitting_min = float(self.x_min_entry.get())
+            x_fitting_max = float(self.x_max_entry.get())
+        except ValueError:
+            messagebox.showwarning('ValueError!', 'Please enter valid "X Min" and "X Max" values.')
+            return
 
         # coefficient (fittingの初期値) をテキストボックスから取得して、手動fittingを行う
-        self.spectrum.fit_spectrum_manually(self.fitting_func_name, 
-                                        x_fitting_min, 
-                                        x_fitting_max,
-                                        p0)
+        self.spectrum.fit_spectrum_manually(
+                                            self.fitting_func_name, 
+                                            x_fitting_min, 
+                                            x_fitting_max,
+                                            p0
+                                            )
 
     def do_it_button_callback(self):
         if self.switch_edcs_fit.get():
@@ -841,18 +985,38 @@ class AnalyzeDataFrame(customtkinter.CTkScrollableFrame): # GUI中部
 
         print("***Fitting analysis***")
         print("Initial parameters:", p0)
-        print("Bound conditions:", bounds)
+        print("Bound conditions:", "Min", bounds[0], "Max", bounds[1])
         print("Fixed parameters:", fixed_params_mask)
-        # fittingを実行
-        self.spectrum.fit_spectrum(self.x_fitting_min, self.x_fitting_max, self.fitting_func_name, p0, bounds, fixed_params_mask)
+        
+        instrum_parames=[]
+        # for i in range('instrum. func. broad. タブのparam数を自動取得できるようにする'):
+            # .get()でparamを取得 --> instrum_parames.append(value)
+            # pass
 
-        # print(self.spectrum.popt)
+        # fittingを実行
+        self.spectrum.fit_spectrum( self.x_fitting_min, self.x_fitting_max, 
+                                    self.fitting_func_name, 
+                                    p0, bounds, fixed_params_mask,
+                                    is_broadened_by_instrum_func=self.switch_instrum_func.get(),
+                                    instrum_func_type=self.instrum_func_combo.get(),
+                                    instrum_params=instrum_parames
+                                    )
+        
         # resultsを表示
         for i in range(len(p0)):
-            try:
-                results_value_label = customtkinter.CTkLabel(master=self.coefficient_frame, text=str(rpa.decimalRound(self.spectrum.popt[i],sig=4)), width=120)
-            except ValueError:
-                results_value_label = customtkinter.CTkLabel(master=self.coefficient_frame, text=str(p0[-1]), width=120)
+            if fixed_params_mask[i]:
+                value = p0[i]
+            elif i < len(self.spectrum.popt) and np.isfinite(self.spectrum.popt[i]):
+                value = rpa.decimalRound(self.spectrum.popt[i], sig=4)
+            else:
+                value = p0[i]
+
+            results_value_label = customtkinter.CTkLabel(
+                                                        master=self.coefficient_frame,
+                                                        text=str(value),
+                                                        width=120,
+                                                        font=self.fonts
+                                                        )
             results_value_label.grid(row=2+i, column=6, padx=(10,10), pady=(0,5), sticky="we")
             self.results_value_labels.append(results_value_label)
 

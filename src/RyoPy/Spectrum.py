@@ -526,6 +526,8 @@ class Spectrum:
             axs[1].legend()
             plt.show()
 
+        # print(self.x)
+
     def fit_spectrum_manually(self, fitting_func, x_fitting_min, x_fitting_max, p0):
         """
         手動で調整 (fittingの初期条件の探索)
@@ -538,29 +540,43 @@ class Spectrum:
         fig, axs = plt.subplots(2, 1, figsize=(5, 7))
         # linear scale
         axs[0].scatter(self.x, self.y, label="Observed spectrum", color="tab:gray", s=10)
-        # print(self.x)
+
         # fitting functionを作製
         if fitting_func == "Polylogarithm": 
             y_fitting_full_temp = rpa.make_Menzel2021_fitting_function(self.x, *p0)
-            y_fitting_temp =      rpa.make_Menzel2021_fitting_function(x_fitting, *p0)
+
         elif fitting_func == "Polylog + Gauss":
             y_fitting_full_temp = rpa.make_lincom_of_polylog_and_gauss(self.x, *p0)
-            y_fitting_temp =      rpa.make_lincom_of_polylog_and_gauss(x_fitting, *p0)
+
         elif fitting_func == "Polylog + Triple Gauss":
             y_fitting_full_temp = rpa.make_lincom_of_polylog_and_three_gauss(self.x, *p0)
-            y_fitting_temp =      rpa.make_lincom_of_polylog_and_three_gauss(x_fitting, *p0)
-        elif fitting_func == "Fermi–edge (conv. Gauss)":
-            y_fitting_full_temp = rpa.make_fermi_edge_function_with_convoluted_gaussian(self.x, *p0)
-            y_fitting_temp =      rpa.make_fermi_edge_function_with_convoluted_gaussian(x_fitting, *p0)
+
+        elif fitting_func == "Fermi–edge of metal (conv. Gauss)":
+            y_fitting_full_temp = rpa.make_fermi_edge_metal_conv_gaussian(self.x, *p0)
+
+        elif fitting_func == "Fermi–edge of degenerate semicon. (conv. Gauss)":
+            y_fitting_full_temp = rpa.make_fermi_edge_degenerate_semicon_conv_gauss(self.x, *p0)
+        
+        elif fitting_func == "Fermi–edge of degenerate semicon. (conv. Lorentz and Gauss)":
+            y_fitting_full_temp = rpa.make_fermi_edge_degenerate_semicon_conv_lorentz_gauss(self.x, *p0)
+        
+        elif fitting_func == "Exponential tail":
+            y_fitting_full_temp = rpa.make_exponential_tail_states(self.x, *p0)
+
         elif fitting_func == "Single Gaussian":
             y_fitting_full_temp = rpa.make_gaussian(self.x, *p0)
-            y_fitting_temp =      rpa.make_gaussian(x_fitting, *p0)
+
         elif fitting_func == "Double Gaussian":
             y_fitting_full_temp = rpa.make_two_gaussian(self.x, *p0)
-            y_fitting_temp =      rpa.make_two_gaussian(x_fitting, *p0)
+
         elif fitting_func == "Triple Gaussian":
             y_fitting_full_temp = rpa.make_three_gaussian(self.x, *p0)
-            y_fitting_temp =      rpa.make_three_gaussian(x_fitting, *p0)
+ 
+        print(y_fitting_full_temp)
+
+        # fitting領域だけ
+        y_fitting_temp = y_fitting_full_temp[rpa.get_idx_of_the_nearest(self.x, x_fitting_min): rpa.get_idx_of_the_nearest(self.x, x_fitting_max)]
+
         # 全エネルギー領域
         axs[0].plot(self.x, y_fitting_full_temp, 
                     label="Extended manual fitting", color="tab:blue", linewidth=1, linestyle="--") 
@@ -663,19 +679,10 @@ class Spectrum:
                     initial_params,
                     bounds,
                     fixed_params_mask,
+                    is_broadened_by_instrum_func=False,
+                    instrum_func_type=None,
+                    instrum_params=[],
                     plots_a_result=True):
-
-        self.fitting_func=fitting_func_name
-
-        # fitting functions
-        func_dict= {'Polylogarithm': rpa.make_Menzel2021_fitting_function, 
-                    'Polylog + Gauss': rpa.make_lincom_of_polylog_and_gauss, 
-                    'Polylog + Triple Gauss': rpa.make_lincom_of_polylog_and_three_gauss,
-                    'Fermi–edge (conv. Gauss)': rpa.make_fermi_edge_function_with_convoluted_gaussian,
-                    'Single Gaussian': rpa.make_gaussian,
-                    'Double Gaussian': rpa.make_two_gaussian,
-                    'Triple Gaussian': rpa.make_three_gaussian}
-
 
         # fitting region
         self.x_fitting_min = x_fitting_min
@@ -689,19 +696,58 @@ class Spectrum:
         self.p0=initial_params
         self.bound=bounds
         self.fixed_params_mask=fixed_params_mask
+
+        self.fitting_func=fitting_func_name
+
+        # ==== fitting関数を決定 ====
+        # 通常とconvolution付きの両方をdictで対応
+        func_dict = {
+            'Polylogarithm': rpa.make_Menzel2021_fitting_function,
+            'Polylog + Gauss': rpa.make_lincom_of_polylog_and_gauss,
+            'Polylog + Triple Gauss': rpa.make_lincom_of_polylog_and_three_gauss,
+            'Fermi–edge of metal (conv. Gauss)': rpa.make_fermi_edge_metal_conv_gaussian,
+            'Exponential tail': rpa.make_exponential_tail_states,
+            'Single Gaussian': rpa.make_gaussian,
+            'Double Gaussian': rpa.make_two_gaussian,
+            'Triple Gaussian': rpa.make_three_gaussian,
+            'Fermi–edge of degenerate semicon. (conv. Gauss)': rpa.make_fermi_edge_degenerate_semicon_conv_gauss,
+            'Fermi–edge of degenerate semicon. (conv. Lorentz and Gauss)': rpa.make_fermi_edge_degenerate_semicon_conv_lorentz_gauss,
+        }
+
+        base_func = func_dict[fitting_func_name]
+
+        # convolution処理をラップする
+        if is_broadened_by_instrum_func:
+            if instrum_func_type is 'Gaussian':
+                def convoluted_fit_func(x, instrum_params, *params):
+                    y = base_func(x, *params)
+                    if instrum_func_type == 'Gaussian':
+                        instrum_func = rpa.make_gaussian(x, 0, instrum_params[0], 1, 0)  # 正規化されたガウス関数
+                    return rpa.convolve(y, instrum_func, self.x_step)
+                fit_func = convoluted_fit_func
+            else:
+                fit_func = base_func
+        else:
+            fit_func = base_func
+        
+        # fitting実行
         try:
-            self.popt, self.pcov = self.fit_spectrum_core(self.x_fitting, y_fitting, func_dict[self.fitting_func], 
+            # self.popt, self.pcov = self.fit_spectrum_core(self.x_fitting, y_fitting, func_dict[self.fitting_func], 
+            #                                 self.p0, self.bound, self.fixed_params_mask)
+            self.popt, self.pcov = self.fit_spectrum_core(self.x_fitting, y_fitting, fit_func, 
                                             self.p0, self.bound, self.fixed_params_mask)
         except RuntimeError:
             messagebox.showwarning('RuntimeError!','RuntimeError.\tPlease reset fitting parameters.')
 
         print("Fitting complete!")
-        print(self.popt)
+        print("Results:", self.popt)
 
         # fitting spectrum作製
-        self.y_fitting=func_dict[self.fitting_func](self.x_fitting, *self.popt)
         self.y_fitting_full=func_dict[self.fitting_func](self.x, *self.popt)
-
+        self.y_fitting=self.y_fitting_full[
+                                        rpa.get_idx_of_the_nearest(self.x, x_fitting_min): 
+                                        rpa.get_idx_of_the_nearest(self.x, x_fitting_max)
+                                        ]
 
         # plotting 
         if plots_a_result:
@@ -709,13 +755,13 @@ class Spectrum:
             
             fig, axs = plt.subplots(2, 1, figsize=(5, 7))
             # linear scale
-            axs[0].scatter(self.x, self.y, label="Observed spectrum", color="tab:gray", s=10)
+            axs[0].scatter(self.x, self.y, label="Observed spectrum", color="tab:gray", s=10) # scatter表示
+            # axs[0].plot(self.x, self.y, label="Observed spectrum", color="tab:gray", linewidth=1.5) # line表示
             axs[0].plot(self.x, self.y_fitting_full, label="Extended fitting func.",linewidth=1, linestyle="--", color='tab:blue') # full range
             axs[0].plot(self.x_fitting, self.y_fitting, label="Fitting func.", linewidth=3, color='black')
             axs[0].set_xlabel("X")
             axs[0].set_ylabel("Y")
             # axs[0].set_title("Fitting result")
-            axs[0].legend()
             
             # log scale
             axs[1].set_yscale("log")
@@ -731,6 +777,53 @@ class Spectrum:
                 axs[1].fill_between(self.x, self.popt[-1], y1, label="olylogarithm", linewidth=0, alpha=0.3, color="tab:blue")
                 axs[1].fill_between(self.x, self.popt[-1], y2, label="gaussian", linewidth=0, alpha=0.3, color="tab:red")
             
+            elif self.fitting_func == "Fermi–edge of degenerate semicon. (conv. Gauss)":
+                y_gapstate = self.popt[0] * np.exp((self.x - self.popt[1])/self.popt[2]) + self.popt[-1]
+                y_CB = self.popt[4] * np.sqrt(np.clip(- self.x + self.popt[3], 0, None)) + self.popt[-1]
+
+                axs[0].fill_between(self.x, self.popt[-1], y_gapstate, label="in-gap states", linewidth=0, alpha=0.3, color="tab:blue")
+                axs[0].fill_between(self.x, self.popt[-1], y_CB, label="CB", linewidth=0, color="tab:orange", alpha=0.3)
+                axs[1].fill_between(self.x, self.popt[-1], y_gapstate, label="in-gap states", linewidth=0, alpha=0.3, color="tab:blue") 
+                axs[1].fill_between(self.x, self.popt[-1], y_CB, label="CB", linewidth=0, color="tab:orange", alpha=0.3)
+
+            elif self.fitting_func == "Fermi–edge of degenerate semicon. (conv. Lorentz and Gauss)":
+                def _lifetime_broadening(x):
+                    x_min = np.around(x[0],6)
+                    x_max = np.around(x[-1],6)
+                    
+                    step = abs(np.around((x[1]-x[0]), 6))
+                    additional_idx = int(1/step)
+                    start = np.around(x_min - additional_idx*step, 6)
+                    end = np.around(x_max + additional_idx*step, 6)
+                    x_ = np.round(np.arange(start, end+step/10, step), 6)
+                    dif_len_x = len(x)-len(x_)
+                    # x_の作成がうまくいかず、1要素ずれることがあるので調整する。
+                    if dif_len_x % 2 != 1:
+                        x_ = np.append(x_, x_[-1] + np.around(x_, 6))
+                    x_gauss = np.round(np.arange(-(len(x_)-1)*step/2, (len(x_)-1)*step/2 + step/10, step), 6) # 装置関数用のx軸
+                    y_lifetime = rpa.make_gaussian(x_gauss, 0, self.popt[5], peak_intensity=1, bg=0)
+
+                    # 元のDOS関数
+                    y_gapstate = self.popt[0] * np.exp((x_ - self.popt[1])/self.popt[2])
+
+                    # y_CB = self.popt[4] * np.sqrt(np.clip(- x_ + self.popt[3], 0, None)) # parabolic band
+                    y_CB = self.popt[4] * np.sqrt(np.clip(-(x_ - self.popt[3])*(1+0.2*(x_ - self.popt[3])), 0, None))*(1 + 2 * 0.2 * (x_ - self.popt[3])) # InNの非放物線バンドに対応
+                    y_gapstate = np.convolve(y_gapstate, y_lifetime, mode='same') * step + self.popt[-1]
+                    y_CB = np.convolve(y_CB, y_lifetime, mode='same') * step + self.popt[-1]
+                    # 元のx軸に合わせて切り取る 
+                    y_gapstate = y_gapstate[rpa.get_idx_of_the_nearest(x_, x_min) : rpa.get_idx_of_the_nearest(x_, x_max)+1]
+                    y_CB = y_CB[rpa.get_idx_of_the_nearest(x_, x_min) : rpa.get_idx_of_the_nearest(x_, x_max)+1]
+                    return y_gapstate, y_CB
+
+                # lifetime broadening
+                y_gapstate, y_CB = _lifetime_broadening(self.x)
+                # broadning後のDOSプロット
+                axs[0].fill_between(self.x, self.popt[-1], y_gapstate, label="in-gap states", linewidth=0, alpha=0.3, color="tab:blue")
+                axs[0].fill_between(self.x, self.popt[-1], y_CB, label="CB", linewidth=0, color="tab:orange", alpha=0.3)
+                axs[1].fill_between(self.x, self.popt[-1], y_gapstate, label="in-gap states", linewidth=0, alpha=0.3, color="tab:blue") 
+                axs[1].fill_between(self.x, self.popt[-1], y_CB, label="CB", linewidth=0, color="tab:orange", alpha=0.3)
+
+
             elif self.fitting_func == 'Double Gaussian':
                 y1 = rpa.make_gaussian(self.x, self.popt[0], self.popt[1], self.popt[2], self.popt[-1])
                 y2 = rpa.make_gaussian(self.x, self.popt[3], self.popt[4], self.popt[5], self.popt[-1])
@@ -766,9 +859,12 @@ class Spectrum:
 
             # title
             axs[0].set_title(f"Y Label: {self.y_legend}\nFilename: {self.filename}")
+            axs[0].legend()
+            axs[1].legend()
 
             plt.tight_layout()
             plt.show()
+
 
     def save_results(self, analysis, is_GUI=False, info_note=None, path_note=None, legend_note=None):
         ###################################################
