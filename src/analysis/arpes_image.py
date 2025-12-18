@@ -2850,7 +2850,7 @@ class App(customtkinter.CTk):
             plt.close(self.edcs_stack_pltctrl.fig)  # 特定の図を閉じる
 
         # edcs stacking生成
-        self.peim.generate_edcs_stack(self.y_offseted, float(self.edcs_ystep_entry.get()))
+        self.peim.generate_edcs_stack(self.y_offseted, float(self.edcs_ystep_entry.get()), self.z_image)
         # edcs offset list生成
         self.peim.z_offset_lst_edcs=[]
         for i in range(len(self.peim.z_edcs)):

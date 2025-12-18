@@ -638,10 +638,12 @@ class MBS_A1:
             self.z_edc_offseted=self.z_edc-self.z_edc_offset
             # self.z_edc_offseted_=copy.deepcopy(self.z_edc_offseted)
 
-    def generate_edcs_stack(self, y, y_step_edcs, mode="normal"):
+    def generate_edcs_stack(self, y, y_step_edcs, z, mode="normal"):
         """
         EDCs stack作成
-        y_step_edcs (float): 刻み幅 [pixcel数でなく、物理量(deg, mm)を記入]
+        y (list): 刻まれる軸
+        y_step_edcs (float): 刻み幅 [pixcel数でなく、リストの値 (deg, mm) で記入]
+        z (入れ子のリスト): 刻まれる画像のリスト
         """
         # 初期化
         self.z_edcs=[]
@@ -680,7 +682,7 @@ class MBS_A1:
                 idx_min=int(idx_max-idx_num+1)
                 self.y_slice_center_edcs.append(np.round((y[idx_min]+y[idx_max])/2, ORDER_Y)) # sliceのセンター
                 # print(y[idx_start], y[idx_end])
-                z_edc_temp=self.generate_an_edc(self.z, y, y[idx_min], y[idx_max], mode="return") # EDCの切り出し。EDCs stack mode (返り値が１次元リスト。インスタンス変数ではない)
+                z_edc_temp=self.generate_an_edc(z, y, y[idx_min], y[idx_max], mode="return") # EDCの切り出し。EDCs stack mode (返り値が１次元リスト。インスタンス変数ではない)
                 self.z_edcs.append(z_edc_temp) #EDCs stackリストにアペンド。
                 i+=1
             # print(len(self.y_slice_center_edcs))
@@ -731,7 +733,13 @@ class MBS_A1:
             added_header.append("Load File Path\t" + '\t'.join(map(str, self.path_lst)))
             added_header.append(f"Save File Path\t{savefile_path}")
             added_header.append(f"Total Actual Scans\t{self.totalactscan}")
-            added_header.append(f"X Label\t{self.x_label}")
+            if axis=="EF":
+                added_header.append(f"X Label\tBinding Energy (eV)")
+            elif axis=="Ek":
+                added_header.append(f"X Label\tKinetic Energy (eV)")
+            elif axis=="VL":
+                added_header.append(f"X Label\tBinding Energy (eV)")
+            
             added_header.append(f"Y Label\t{self.y_label}")
             added_header.append(f"Z Label\t{self.z_label}")
             if axis=="EF":

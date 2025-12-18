@@ -75,9 +75,11 @@ class PlotControl:
 
     # スペクトルを追加する
     def add_spectrum(self, x, y, label, new_title=None, new_x_label=None, new_y_label=None, color=None, alpha=1, 
-                     scatter=True, linewidth=3, linestyle="-", scientific_yscale=True, zorder=1, s=10):
+                     scatter=True, linewidth=3, linestyle="-", scientific_yscale=True, zorder=1, s=10, edgecolor="default"):
+        if edgecolor=="default":
+            edgecolor=color
         if scatter:
-            self.scatter.append(self.ax.scatter(x, y, label=label, s=s, color=color, alpha=alpha, zorder=zorder))
+            self.scatter.append(self.ax.scatter(x, y, label=label, s=s, facecolor=color, edgecolor=edgecolor, alpha=alpha, zorder=zorder))
         else:
             self.line.append(self.ax.plot(x, y, label=label, color=color, alpha=alpha, zorder=zorder, linewidth=linewidth, linestyle=linestyle))
         

@@ -60,8 +60,8 @@ smooth_SG=False # Savitzky-Golay smoothing
 smooth_gauss=True # Gaussian smoothing
 show_log_scale_CFS_BGvsDPYS_BG=True # linear scale
 show_log_scale_CFSvsDPYS=True # log scale
-plot_2d_pys = False
-save_output = True # saveするか (saveしないとき図が出力される)
+plot_2d_pys = False # 2階微分をプロットするか
+save_output = False # saveするか (saveしないとき図が出力される)
 
 
 # ファイル名
@@ -75,7 +75,8 @@ save_output = True # saveするか (saveしないとき図が出力される)
 
 # filename_pys = 'C60_tateno_PYS接続re.csv' # D2
 # filename_pys = 'd2_4_5_6_8_9_10_11.4_NAKAZAWA.csv' # D2
-filename_pys = 'C60_hoshikawa_4_9.csv' # D2
+# filename_pys = 'C60_hoshikawa_4_9.csv' # D2
+filename_pys = '20251215_tatenoPYS_con_FITexp.csv' # D2
 # filename_pys = 'C60_tateno_PYS.csv' # D2
 filename_cfs = 'C60_tateno_CFS.csv' # D2
 
@@ -99,7 +100,7 @@ background=0
 # plotパラメータ （Fig4, CFSとDPYSの比較）
 mult_y_pys_dif=1.2e-0
 # mult_y_pys_dif=3e-11
-mult_y_pys_dif_dif=15
+mult_y_pys_dif_dif=1e-5
 
 ####################################################################
 
@@ -112,7 +113,7 @@ mult_y_pys_dif_dif=15
 # base_path = Path(__file__).resolve().parent.parent.parent
 
 # 絶対パスを指定する
-base_path = Path("/Users/ryotaro/Library/Group Containers/UBF8T346G9.OneDriveStandaloneSuite/OneDrive.noindex/OneDrive/ドキュメント/論文執筆/2023_ACS_BEE/解析")
+base_path = Path("/Users/ryotaro/Library/Group Containers/UBF8T346G9.OneDriveStandaloneSuite/OneDrive.noindex/OneDrive/ドキュメント/論文執筆/2025_ACS_BEE/図/PYS_DPYSvsCFS")
 # フォルダAの中の fileB を指定
 import_file_path_cfs = base_path / filename_cfs
 import_file_path_pys = base_path / filename_pys

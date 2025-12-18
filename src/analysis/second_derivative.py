@@ -572,12 +572,12 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
                     # 二次微分ピーク
                     self.edcs_second_derivative_pltctrl.add_spectrum(self.peak_energy_lst[i], 
                                                                     [intensity - self.y_2der_offset[i] for intensity in self.peak_intensity_lst[i]], # yはリスト型なので内包表記した。
-                                                                    label="", linewidth=1, scatter=True, color="black", linestyle="|")
+                                                                    label="", linewidth=1, scatter=True, color="None", edgecolor="black", linestyle="|", s=15)
 
                     # import dataにピークプロットを重ねる
                     self.peak_plot_pltctrl.add_spectrum(self.x, self.image[0].z[i]+self.y_edc_offset[i], label="", linewidth=1, scatter=False, color=SPECTRAL_COLOR)
                     self.peak_plot_pltctrl.add_spectrum(self.peak_energy_lst[i], np.array(self.image_peak_intensity_lst[i])+self.y_edc_offset[i],
-                                                            label="", linewidth=1, scatter=True, color="black", linestyle="|")
+                                                            label="", linewidth=1, scatter=True, color="None", edgecolor="black", linestyle="|", s=15 )
                     self.fig_instance_lst.append(self.peak_plot_pltctrl)
 
             if self.image[0].x_label=="Binding Energy (eV)":
@@ -699,12 +699,12 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
                     # 二次微分ピーク
                     self.edcs_curvature_pltctrl.add_spectrum(self.peak_energy_lst[i], 
                                                                     [intensity - self.y_2der_offset[i] for intensity in self.peak_intensity_lst[i]], # yはリスト型なので内包表記した。
-                                                                    label="", linewidth=1, scatter=True, color="black", linestyle="|")
+                                                                    label="", linewidth=1, scatter=True, color="None", edgecolor="black", linestyle="|", s=15)
 
                     # import dataにピークプロットを重ねる
                     self.peak_plot_pltctrl.add_spectrum(self.x, self.image[0].z[i]+self.y_edc_offset[i], label="", linewidth=1, scatter=False, color=SPECTRAL_COLOR)
                     self.peak_plot_pltctrl.add_spectrum(self.peak_energy_lst[i], np.array(self.image_peak_intensity_lst[i])+self.y_edc_offset[i],
-                                                            label="", linewidth=1, scatter=True, color="black", linestyle="|")
+                                                            label="", linewidth=1, scatter=True, color="None", edgecolor="black", linestyle="|", s=15)
                     self.fig_instance_lst.append(self.peak_plot_pltctrl)
                     
             if self.image[0].x_label=="Binding Energy (eV)":
