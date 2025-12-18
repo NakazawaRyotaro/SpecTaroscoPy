@@ -151,8 +151,9 @@ class MBS_A1:
             self._extract_measurement_conditions_from_spectaro_data()
 
             data_ = self._parse_data_block()
-            # dataの行列を転置する。
-            data = np.array(data_).T
+            # print("data:", data_)
+
+            data = np.array(data_).T # dataの行列を転置する。
 
             if "[SpecTaroscoPy — PES image]" in self.l:
                 z_ = self._handle_spectrum_analyzer_output(data)
@@ -369,6 +370,7 @@ class MBS_A1:
                         row[j] = 0
             if not label_flag:
                 data.append(row)
+        # print(data)
         return data
 
     def _handle_spectrum_analyzer_output(self, z_):

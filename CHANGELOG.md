@@ -8,3 +8,4 @@
 |2025/09/28|6.4.8|ARPES image解析でMBS A-1アプリによらず最低限の解析が出来るように改善。  出力はX (Ek, EF, VL)が1列目。2列目以降が強度。|
 |2025/09/30|6.4.9|READMEとCHANGELOGを分け、md fileに変更。|
 |2025/10/04|6.4.10|Frame.pyのバグを修正しました。|
+|2025/12/19|6.4.12|ARPES imageでDA30も半手動で解析可能。Second derivativeは出力figureの見た目を変更。|
