@@ -1,3 +1,4 @@
+Info:
 ScaleName	Angle(Degrees)
 EScaleName	Kinetic Energy (eV)
 ScaleMult	0.04884
@@ -7,6 +8,6 @@ ActScans	24
 Frames Per Step	90
 Pass Energy	PE020
 
-[Data 1]
+DATA:
 ここにDA30のDATA1以降の数値データを貼る。
 末尾に改行が2つくらいあるので事前に消してください。
