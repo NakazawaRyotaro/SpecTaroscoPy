@@ -46,7 +46,6 @@ def main_second_derivative():
     peim_plot.show_figures()
     peim_image_ddx_plot.show_figures()
 
-
 def main_image_analysis():   
     # data読み込み
     peim=MBS_A1(plt_show=False) #photoemission intensity map
@@ -75,6 +74,8 @@ def main_image_analysis():
     # for i in range(len(peim.z_edcs)):
     #     plt.plot(peim.x, peim.z_edcs[i]+z_offset_edcs*i)
     # plt.show()
+
+
 
 
 class MBS_A1:
@@ -145,16 +146,18 @@ class MBS_A1:
         x_min_old = None
 
         for k, path in enumerate(self.path_lst):
+            # file読み込み、および、測定条件抽出
             print(f'Load File: {path}')
             self._read_file(path)
             self._extract_measurement_conditions()
             self._extract_measurement_conditions_from_spectaro_data()
-
-            data_ = self._parse_data_block()
+            # 強度データを抽出
+            data_ = self._extract_intensity_data()
             # print("data:", data_)
 
             data = np.array(data_).T # dataの行列を転置する。
 
+            # 解析済みデータを読み込む場合。
             if "[SpecTaroscoPy — PES image]" in self.l:
                 z_ = self._handle_spectrum_analyzer_output(data)
             else:
@@ -173,16 +176,16 @@ class MBS_A1:
                 x_min_old = copy.deepcopy(self.x_min)
                 x_max_old = copy.deepcopy(self.x_max)
 
-            print(max(z_[k][:]))
+            # print(max(z_[k][:]))
                 
         if self.z_sekisan_flag is False:
             self.filename=self.filename_lst[-1]
         else:
             self.filename = self._create_filename(self.filename_lst)
 
+        # 最終調整 (SpecTaroscoPyデータを解析する場合に例外処理が必要なため)
         self._finalize_z_image()
         self._finalize_xy_labels()
-
 
     # filenameを作る関数 
     def _create_filename(self, lst):
@@ -348,11 +351,12 @@ class MBS_A1:
             self.actscan, _ = r(self.l, "ActScans", words_for_failure=self.actscan)
         self.totalactscan += int(self.actscan)
 
-    def _parse_data_block(self):
+
+    def _extract_intensity_data(self, data_index='DATA:'):
         data = []
         self.labels = []
         try:
-            index=self.l.index('DATA:')
+            index=self.l.index(data_index)
         except ValueError:
             index=0
             
