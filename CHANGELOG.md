@@ -10,3 +10,4 @@
 |2025/10/04|6.4.10|Frame.pyのバグを修正しました。|
 |2025/12/19|6.4.12|ARPES imageでDA30も半手動で解析可能。Second derivativeは出力figureの見た目を変更。|
 |2025/12/19|6.5.0|ARPES image解析でDA30のtext fileを読み込めるようにした。|
+|2025/12/19|6.5.2|ARPES image/二次微分解析のバグ修正。|
