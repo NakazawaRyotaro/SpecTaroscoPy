@@ -346,7 +346,8 @@ class App(customtkinter.CTk):
         if self.peim.z is None: # 平均化処理できなかった場合は、最後に読み込んだfileを解析する
             self.peim.z = copy.deepcopy(self.peim.z_paths[-1])
             self.z_image = copy.deepcopy(self.peim.z_paths[-1])
-        
+            self.z_image_paths=copy.deepcopy(self.peim.z_paths)
+
             # zはリストがそろっていない場合の処理を別で行うため少し複雑
             self.z_min=np.inf
             self.z_max=-np.inf
@@ -360,6 +361,7 @@ class App(customtkinter.CTk):
 
         else:
             self.z_image=copy.deepcopy(self.peim.z)
+            self.z_image_paths=copy.deepcopy(self.peim.z_paths)
             self.z_min=np.amin(self.z_image)
             self.z_max=np.amax(self.z_image)         
         
@@ -629,6 +631,7 @@ class App(customtkinter.CTk):
             self.z_image=copy.deepcopy(self.peim.z)
             for i in range(len(self.peim.z_paths)):
                 self.peim.z_paths[i]=(self.peim.z_paths[i].T/self.mcp_spectrum_y).T
+            self.z_image_paths=copy.deepcopy(self.peim.z_paths)
 
             self.z_min=np.amin(self.peim.z)
             self.z_max=np.amax(self.peim.z)
@@ -1043,15 +1046,17 @@ class App(customtkinter.CTk):
             self.y=copy.deepcopy(self.peim.kh)
             self.y_offseted=copy.deepcopy(self.peim.kh_offseted)
             self.z_image=copy.deepcopy(self.peim.z_kh_offseted)
+            self.z_image_paths=copy.deepcopy(self.peim.z_kh_paths)
             self.flag_swap_image_xy_axes=True
             self.flag_reverse_image_y_axis=True
         else:
             self.y=copy.deepcopy(self.peim.y)
             self.y_offseted=copy.deepcopy(self.y_offseted)
             self.z_image=copy.deepcopy(self.peim.z)
+            self.z_image_paths=copy.deepcopy(self.peim.z_paths)
             self.flag_swap_image_xy_axes=False
             self.flag_reverse_image_y_axis=False
-
+            
         # y更新
         self.y_min=np.amin(self.y_offseted)
         self.y_max=np.amax(self.y_offseted)
@@ -1883,12 +1888,12 @@ class App(customtkinter.CTk):
         # EDC作成
         # 入力したすべてのファイルのEDCを作成
         for i in range(len(self.peim.z_paths)):
-            self.z_edc_paths.append(self.peim.generate_an_edc(self.peim.z_paths[i], self.y_offseted, 
+            self.z_edc_paths.append(self.peim.generate_an_edc(self.z_image_paths[i], self.y_offseted, 
                                                                 self.y_slice_min, self.y_slice_max, 
                                                                 mode="return"))
         # 平均処理している場合の処理
         if self.peim.z_sekisan_flag:
-            self.peim.generate_an_edc(self.peim.z, self.y_offseted, 
+            self.peim.generate_an_edc(self.z_image, self.y_offseted, 
                                       self.y_slice_min, self.y_slice_max, 
                                       mode="edc")
             self.z_edc_offseted=self.peim.z_edc
