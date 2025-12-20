@@ -1031,7 +1031,7 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
                         y_slice_center=1
                         if self.image[0].y_slice_center_edcs!=[]:
                             y_slice_center=self.image[0].y_slice_center_edcs[i]
-                        data.append(f'{y_slice_center}\t{self.peak_energy_lst[i][j]}\t{self.peak_intensity_lst[i][j]}')
+                        data.append(f'{y_slice_center}\t{self.peak_energy_lst[i][j]}\t{self.image_peak_intensity_lst[i][j]}')
             
             else:
                 # 二次微分解析の場合
