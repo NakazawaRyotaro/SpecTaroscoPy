@@ -292,7 +292,7 @@ class App(customtkinter.CTk):
         load_file_button.grid(row=0, column=3, padx=(0,10), pady=(10,5), sticky="w")
         customtkinter.CTkLabel(self.load_data_frame, text='Equipment', width=70).grid(row=0, column=1, padx=(5,5), pady=(10,5), sticky="e")
         self.equipment_combo = customtkinter.CTkComboBox(self.load_data_frame, font=self.fonts, command=None, width=200,
-                                                    values=["MBS A-1 (Kera G, IMS)", 
+                                                    values=["MBS A-1 (Kera G, IMS)/General text", 
                                                             "Scienta DA30 (IMS)",
                                                             "MBS A-1 (G1, BL7U, UVSOR)", 
                                                             "MBS A-1 (G2, BL7U, UVSOR)", 
@@ -331,7 +331,7 @@ class App(customtkinter.CTk):
         self.z_ini=None
 
         # photoemission intensity map インスタンス生成
-        if self.equipment_combo.get() == "MBS A-1 (Kera G, IMS)":
+        if self.equipment_combo.get() == "MBS A-1 (Kera G, IMS)/General text":
             self.peim=MBS_A1(idir=IDIR)
         elif self.equipment_combo.get() == "MBS A-1 (G2, BL7U, UVSOR)":
             self.peim=MBS_A1(idir=IDIR)
@@ -580,7 +580,7 @@ class App(customtkinter.CTk):
             plt.close(self.mcp_spectrum_pltctrl.fig)  # 図を閉じる
         
         if self.mcp_segmented.get()=="Image File\n→fMDC":
-            if self.equipment_combo.get()=='MBS A-1 (Kera G, IMS)' or self.equipment_combo.get()=='MBS A-1 (G1, BL7U, UVSOR)'or self.equipment_combo.get()=='MBS A-1 (G2, BL7U, UVSOR)'or self.equipment_combo.get()=='MBS A-1 (G3, BL7U, UVSOR)':
+            if self.equipment_combo.get()=='MBS A-1 (Kera G, IMS)/General text' or self.equipment_combo.get()=='MBS A-1 (G1, BL7U, UVSOR)'or self.equipment_combo.get()=='MBS A-1 (G2, BL7U, UVSOR)'or self.equipment_combo.get()=='MBS A-1 (G3, BL7U, UVSOR)':
                 mcp_image=MBS_A1(idir=IDIR)
                 # YDC作成
                 mcp_image.generate_a_ydc(mcp_image.z, mcp_image.y, mcp_image.y_min, mcp_image.y_max)
@@ -828,7 +828,7 @@ class App(customtkinter.CTk):
 
     def get_x_EF_and_hn_of_HeIaUPS(self):
         self.hn=21.218
-        if self.equipment_combo.get()=="MBS A-1 (Kera G, IMS)":
+        if self.equipment_combo.get()=="MBS A-1 (Kera G, IMS)/General text":
             if self.peim.Epass==2:
                 self.x_EF, _ = rpa.open_file_and_get_words_next_to_search_term(arpes_image_setting_path, "EF_HeIa_Ep02_MBSA1_KeraG")
             if self.peim.Epass==5:
@@ -840,7 +840,7 @@ class App(customtkinter.CTk):
 
     def get_x_EF_and_hn_of_HeIIaUPS(self):
         self.hn=40.814
-        if self.equipment_combo.get()=="MBS A-1 (Kera G, IMS)":
+        if self.equipment_combo.get()=="MBS A-1 (Kera G, IMS)/General text":
             if self.peim.Epass==2:
                 self.x_EF, _ = rpa.open_file_and_get_words_next_to_search_term(arpes_image_setting_path, "EF_HeIIa_Ep02_MBSA1_KeraG")
             if self.peim.Epass==5:
@@ -852,7 +852,7 @@ class App(customtkinter.CTk):
         
     def get_x_EF_and_hn_of_XeIaUPS(self):
         self.hn=8.437
-        if self.equipment_combo.get()=="MBS A-1 (Kera G, IMS)":
+        if self.equipment_combo.get()=="MBS A-1 (Kera G, IMS)/General text":
             if self.peim.Epass==2:
                 self.x_EF, _ = rpa.open_file_and_get_words_next_to_search_term(arpes_image_setting_path, "EF_XeIa_Ep02_MBSA1_KeraG")
             if self.peim.Epass==5:
@@ -864,13 +864,13 @@ class App(customtkinter.CTk):
 
     def get_x_EF_and_hn_of_AlKaXPS(self):
         self.hn=1486.65
-        if self.equipment_combo.get()=="MBS A-1 (Kera G, IMS)":
+        if self.equipment_combo.get()=="MBS A-1 (Kera G, IMS)/General text":
             if self.peim.Epass==100:
                 self.x_EF, _ = rpa.open_file_and_get_words_next_to_search_term(arpes_image_setting_path, "EF_AlKa_Ep100_MBSA1_KeraG")
 
     def get_x_EF_and_hn_of_MgKaXPS(self):
         self.hn=1253.6
-        if self.equipment_combo.get()=="MBS A-1 (Kera G, IMS)":
+        if self.equipment_combo.get()=="MBS A-1 (Kera G, IMS)/General text":
             if self.peim.Epass==100:
                 self.x_EF, _ = rpa.open_file_and_get_words_next_to_search_term(arpes_image_setting_path, "EF_MgKa_Ep100_MBSA1_KeraG")
 
@@ -922,7 +922,7 @@ class App(customtkinter.CTk):
                 x_EF0, _ = rpa.open_file_and_get_words_next_to_search_term(arpes_image_setting_path, "EF_variable_hn_Ep20_G3_MBSA1_BL7U")
                 hn0, _ = rpa.open_file_and_get_words_next_to_search_term(arpes_image_setting_path, "hn_variable_hn_Ep20_G3_MBSA1_BL7U")
 
-        elif self.equipment_combo.get()=="MBS A-1 (Kera G, IMS)":
+        elif self.equipment_combo.get()=="MBS A-1 (Kera G, IMS)/General text":
             # hn=0-15eVの時はXeIのEFと差分を取る
             if self.hn>=0 and self.hn<=15:
                 hn0=8.437
@@ -966,7 +966,7 @@ class App(customtkinter.CTk):
 
 
     def get_x_EF_and_hn_of_2PPE(self):
-        if self.equipment_combo.get()=="MBS A-1 (Kera G, IMS)":
+        if self.equipment_combo.get()=="MBS A-1 (Kera G, IMS)/General text":
             self.nm=float(self.hn_2PPE_entry.get())
             self.hn=1240/self.nm
             if self.peim.Epass==10:

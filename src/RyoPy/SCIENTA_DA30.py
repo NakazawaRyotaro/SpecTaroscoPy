@@ -10,6 +10,8 @@ from scipy.signal import argrelmax, argrelmin
 from RyoPy.PlotControl import ImagePlotControl, PlotControl
 from RyoPy.MBS_A1 import MBS_A1
 import RyoPy.defs_for_analysis as rpa
+import matplotlib.pyplot as plt
+
 
 # SpectrumAnalyzer用にデータを読み込む
 try:
@@ -63,9 +65,8 @@ def main_image_analysis():
     y_slice_min=peim.y_min
     y_slice_max=peim.y_max
     peim.generate_an_edc(peim.z, peim.y, y_slice_min, y_slice_max)
-    # plt.plot(peim.x, peim.z_edc)
-    # plt.show()
-    peim.save_edc_flow(mode="Ek")
+    plt.plot(peim.x, peim.z_edc)
+    plt.show()
 
     # edc stack
     # y_step_edcs=2 # n (degree) or n (mm) 刻み
@@ -81,7 +82,7 @@ class SCIENTA_DA30(MBS_A1):
     def _extract_measurement_conditions(self):
         r = rpa.get_words_next_to_search_term
 
-        self.line, _ = r(self.l, "Lines")
+        # self.line, _ = r(self.l, "Lines")
         self.frame, has_frame = r(self.l, "Step Time", words_for_failure=self.frame, mark="=")
         # if has_frame:
         #     self.frame, has_frame = r(self.l, "Step Time", words_for_failure=self.frame, mark="=")
@@ -144,24 +145,24 @@ class SCIENTA_DA30(MBS_A1):
     def _extract_measurement_conditions_from_spectaro_data(self):
         # DA30用
         r = rpa.get_words_next_to_search_term
-        if "[SpecTaroscoPy — PES image]" in self.l or "[Spectrum Analyzer]" in self.l:
-            self.y_label, _ = r(self.l, "Y Label", type="str", words_for_failure=self.y_label)
-            self.x_label, _ = r(self.l, "X Label", type="str", words_for_failure=self.x_label)
-            self.y_min, _ = r(self.l, "Y Min")
-            self.y_max, _ = r(self.l, "Y Max")
-            self.y_step, _ = r(self.l, "Y Step")
-            self.actscan, _ = r(self.l, "Total Actual Scans", words_for_failure=self.actscan)
+        # if "[SpecTaroscoPy — PES image]" in self.l or "[Spectrum Analyzer]" in self.l:
+        #     self.y_label, _ = r(self.l, "Y Label", type="str", words_for_failure=self.y_label)
+        #     self.x_label, _ = r(self.l, "X Label", type="str", words_for_failure=self.x_label)
+        #     self.y_min, _ = r(self.l, "Y Min")
+        #     self.y_max, _ = r(self.l, "Y Max")
+        #     self.y_step, _ = r(self.l, "Y Step")
+        #     self.actscan, _ = r(self.l, "Total Actual Scans", words_for_failure=self.actscan)
+        # else:
+        if self.lens == "Transmission":
+            self.y_label = "Position (mm)"
         else:
-            if self.lens == "Transmission":
-                self.y_label = "Position (mm)"
-            else:
-                self.y_label = "Angle (Degrees)"
-            y_lst, _ =rpa.get_list_next_to_search_term(self.l, "Dimension 2 scale", mark="=", inner_mark=' ')
-            # print('y_lst:', y_lst)
-            self.y_min = np.amin(np.array(y_lst, dtype=float))
-            self.y_max = np.amax(np.array(y_lst, dtype=float))
-            self.y_step = abs(np.round(y_lst[0]-y_lst[1], 6))
-            self.actscan, _ = r(self.l, "Number of Sweeps", words_for_failure=self.actscan, mark="=")
+            self.y_label = "Angle (Degrees)"
+        y_lst, _ =rpa.get_list_next_to_search_term(self.l, "Dimension 2 scale", mark="=", inner_mark=' ')
+        # print('y_lst:', y_lst)
+        self.y_min = np.amin(np.array(y_lst, dtype=float))
+        self.y_max = np.amax(np.array(y_lst, dtype=float))
+        self.y_step = abs(np.round(y_lst[0]-y_lst[1], 6))
+        self.actscan, _ = r(self.l, "Number of Sweeps", words_for_failure=self.actscan, mark="=")
         self.totalactscan += int(self.actscan)
 
 
