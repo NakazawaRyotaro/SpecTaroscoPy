@@ -2,11 +2,11 @@
 
 //Color tuner 
 //Keisuke Fukutani (2019)
-
+//Edited by R Nakazawa (2025)
 
 
 Menu "VisARPES"
-	"ColorTuner/2",  DuplicateCheckCTKF()	
+	"ColorTuner (RN)/2",  DuplicateCheckCTKF()	
 End
 
 Function DuplicateCheckCTKF()	
@@ -37,7 +37,7 @@ Function ColorChange() : Panel
 	String/G ActiveWave
 	Variable/D/G ActiveWaveMax
 	Variable/D/G ActiveWaveMin
-	
+	Variable/D/G step
 	
 	//Identify the topmost graph and its 1st wave and store their names in ActiveGraph and ActiveWave, respectively
 	String/G ActiveGraph = WinName(0,1)                
@@ -52,7 +52,7 @@ Function ColorChange() : Panel
 	
 	//Build the color tuner panel
 	PauseUpdate; Silent 1		// building window...	
-	NewPanel /N=ColorTunerKF   /W=(700,71,1011,200)  /K=1  as "Color Tuner"	//Note the flag /K=1 (no dialog when killing)
+	NewPanel /N=ColorTunerKF   /W=(700,71,1011,200)  /K=1  as "Color Tuner (RN)"	//Note the flag /K=1 (no dialog when killing)
 	DoUpdate/E=1 /W='Color tuner'
 	ModifyPanel cbRGB=(65535,65535,65535)
 	SetDrawLayer UserBack
@@ -72,8 +72,8 @@ Function ColorChange() : Panel
 	PopupMenu popup0, value="*COLORTABLEPOP*", proc = ChangeColorStyle,  mode = Whichlistitem(ColorName, ctablist())+1,  pos={0,100}
 	SetVariable setvar0 title="Max.",size={80,20}, pos={200, 26},variable=UpperV, value=UpperV, proc = ChangeUpperV, live=1
 	SetVariable setvar1 title="Min.",size={80,50}, pos={200, 70}, Variable=LowerV, value=LowerV, proc = ChangeLowerV, live=1
-	Slider slider0 vert=0,side=1, variable=UpperV, proc=ChangeUpper, limits={ActiveWaveMin,ActiveWaveMax,0.1}, size={190,45}, pos={2,26}, tkLblRot=180, ticks=-10, value=UpperV, live=1
-	Slider slider1 vert=0,side=2, variable=LowerV, proc=ChangeLower, limits={ActiveWaveMin,ActiveWaveMax,0.1}, size={190,45}, pos={2,70}, ticks=-10, value=LowerV, live=1
+	Slider slider0 vert=0,side=1, variable=UpperV, proc=ChangeUpper, limits={ActiveWaveMin,ActiveWaveMax, step}, size={190,45}, pos={2,26}, tkLblRot=180, ticks=-10, value=UpperV, live=1
+	Slider slider1 vert=0,side=2, variable=LowerV, proc=ChangeLower, limits={ActiveWaveMin,ActiveWaveMax, step}, size={190,45}, pos={2,70}, ticks=-10, value=LowerV, live=1
 	PopupMenu popup1 value=ImageNameList("",";"), title="", popvalue = activewave, proc=ActiveWaveChange, pos = {75,3}   //Wave selection
 	CheckBox check0 title="Reverse", pos={209, 103},variable=reversecoloring, proc=reversing
 	Button button1 title="Auto",size={40,20}, pos={227,44}, proc=AutoScaleGraph, help={"this is help"}
@@ -246,7 +246,7 @@ Execute "ExractColorInfo()"
 
 	Variable minVal = wavemin($activewave)
 	Variable maxVal = wavemax($activewave)
-	Variable step = (maxVal - minVal)/200
+	Variable step = (maxVal - minVal)/400
 
 	Slider slider0 limits={minVal, maxVal, step}, win='ColorTunerKF'
 	Slider slider1 limits={minVal, maxVal, step}, win='ColorTunerKF'

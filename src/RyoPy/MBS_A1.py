@@ -1003,12 +1003,12 @@ class MBS_A1:
         return curvature
     
 
-    def detect_peaks_in_nested_list(self, x, nested_list, order=5, negative_peak=True, another_list=None):
+    def detect_peaks_in_nested_list(self, x, y_lst, order=5, negative_peak=True, another_list=None):
         """
         入れ子リスト内の各データ（y）に対して局所的な最大値（ピーク）を検出する。
 
         Parameters:
-            nested_data (list of list): 入れ子のデータリスト。
+            y_lst (list of list): 入れ子のデータリスト。
             order (int): ピークを検出する際の局所的比較範囲。
             negative_peak (bool): 負ピークを検出するか、正ピークを検出するか。
             another_list (list of list): 入れ子の別のデータリスト。
@@ -1022,16 +1022,16 @@ class MBS_A1:
         peak_z_list = []
         peak_another_z_list = []
 
-        for i in range(len(nested_list)):
+        for i in range(len(y_lst)):
             # 局所的な最大(小)値のインデックスを取得
             if not negative_peak:
-                peak_indices = argrelmax(nested_list[i], order=order)[0]
+                peak_indices = argrelmax(y_lst[i], order=order)[0]
             else:
-                peak_indices = argrelmin(nested_list[i], order=order)[0]
+                peak_indices = argrelmin(y_lst[i], order=order)[0]
 
             # 最大値の強度（値）を取得
             peak_x = list(x[peak_indices])  # リスト化
-            peak_z = list(nested_list[i][peak_indices])  # リスト化
+            peak_z = list(y_lst[i][peak_indices])  # リスト化
             
             # 結果をリストに格納
             peak_x_list.append(peak_x)

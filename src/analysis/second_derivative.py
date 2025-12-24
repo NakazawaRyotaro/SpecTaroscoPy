@@ -4,7 +4,7 @@ import numpy as np
 import platform
 from pathlib import Path
 import subprocess
-
+from tkinter import messagebox
 # sysモジュールをインポート（Pythonのパスや環境に関する操作をするため）
 import sys
 # osモジュールをインポート（ファイルパスの操作や環境関連の処理に使う）
@@ -139,6 +139,7 @@ class App(customtkinter.CTk):
         setting_button = customtkinter.CTkButton(self, command=self.open_setting, text="Setting", font=self.fonts)
         setting_button.grid(row=100, column=1, padx=(0, 20), pady=(0, 10), sticky="esnw")
 
+
     def open_manual_button_callback(self):
         # 現在のスクリプトの親ディレクトリを取得
         parent_directory = os.path.dirname(os.path.abspath(__file__))
@@ -195,6 +196,9 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
         self.y_2der_offset = []
         self.order_detect_peak=None
         
+        # if curvature==False:
+        #     self.z_curvature=None
+
         # rowを指定
         self.ROW_START_FITTING_PARAMS = 2 # parameter行は2-48行
         self.ROW_START_CURVATURE_PARAMS = 50 # curvature paramは50-89行
@@ -231,12 +235,12 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
         self.y_offset_entry.insert(0, 0)
 
         # SmoothingしたときのRMSE計算
-        label = customtkinter.CTkLabel(master=self, text="RMSE (Only EDC Mode)")
-        label.grid(row=40, column=0, padx=10, pady=(0,10), sticky="ew")
-        rmse_checkbox_value = customtkinter.BooleanVar() # チェックボックスの変数を作成し、初期値をTrueに設定
-        rmse_checkbox_value.set(False)
-        self.rmse_checkbox = customtkinter.CTkCheckBox(master=self, text="", variable=rmse_checkbox_value, width=20)
-        self.rmse_checkbox.grid(row=40, column=1, padx=(0,0), pady=(0,10), sticky="ew")    
+        # label = customtkinter.CTkLabel(master=self, text="RMSE (Only EDC Mode)")
+        # label.grid(row=40, column=0, padx=10, pady=(0,10), sticky="ew")
+        # rmse_checkbox_value = customtkinter.BooleanVar() # チェックボックスの変数を作成し、初期値をTrueに設定
+        # rmse_checkbox_value.set(False)
+        # self.rmse_checkbox = customtkinter.CTkCheckBox(master=self, text="", variable=rmse_checkbox_value, width=20)
+        # self.rmse_checkbox.grid(row=40, column=1, padx=(0,0), pady=(0,10), sticky="ew")    
 
         # フレームのラベルを表示
         if self.has_second_derivative_frame:
@@ -265,7 +269,7 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
         label = customtkinter.CTkLabel(master=self, text="Detect Peaks")
         label.grid(row=91, column=0, padx=10, pady=(0,5), sticky="ew")
         detect_peak_checkbox_value = customtkinter.BooleanVar() # チェックボックスの変数を作成し、初期値をTrueに設定
-        detect_peak_checkbox_value.set(False)
+        detect_peak_checkbox_value.set(True)
         self.detect_peak_checkbox = customtkinter.CTkCheckBox(master=self, text="", variable=detect_peak_checkbox_value, width=20)
         self.detect_peak_checkbox.grid(row=91, column=1, padx=(0,0), pady=(0,5), sticky="ew")
 
@@ -274,7 +278,7 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
         y_offset_label.grid(row=92, column=0, padx=10, pady=(0,5), sticky="ew")
         self.order_entry = customtkinter.CTkEntry(master=self, placeholder_text="ピーク検出感度 (正数)", width=120, font=self.fonts) # 入力
         self.order_entry.grid(row=92, column=1, padx=(0,10), pady=(0,5), sticky="ew")
-        self.order_entry.insert(0, 15)
+        self.order_entry.insert(0, 35)
 
         x_max_label = customtkinter.CTkLabel(master=self, text="Max X")
         x_max_label.grid(row=93, column=0, padx=10, pady=(0,5), sticky="ew")
@@ -310,7 +314,7 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
         self.smoothing_params={
             "Savitzky-Golay":   {
                                 "labels": ("Order Number", "Window Size", "Iteration Number"),
-                                "placeholders": ("正数", "次数以上の奇数", "正数"),
+                                "placeholders": ("正数", "次数以上の「奇数」", "正数"),
                                 "defaults": (2, False, False)
                                 },
             "Binomial": {
@@ -441,16 +445,16 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
         print("スムージング完了。")
     
         # 二次微分結果をplot
-        title=f'Smoothing: {self.image[0].filename}'
+        title=f'Filename: {self.image[0].filename}'
         if self.smoothing_method=='Savitzky-Golay' and self.has_curvature_frame==False:
-            title=f'Smoothing: {self.image[0].filename}\nSG params: Oder {int(self.smoothing_param_values[0])}, {int(self.smoothing_param_values[1])} point(s), {int(self.smoothing_param_values[2])} iteration(s)'
+            title=f'Filename: {self.image[0].filename}\nSG params: Oder {int(self.smoothing_param_values[0])}, {int(self.smoothing_param_values[1])} point(s), {int(self.smoothing_param_values[2])} iteration(s)'
         elif self.smoothing_method=='Binomial' and self.has_curvature_frame==False:
-            title=f'Smoothing: {self.image[0].filename}\nSG params: Oder {int(self.smoothing_param_values[0])}, {int(self.smoothing_param_values[1])} iteration(s)'
+            title=f'Filename: {self.image[0].filename}\nSG params: Oder {int(self.smoothing_param_values[0])}, {int(self.smoothing_param_values[1])} iteration(s)'
 
         # スムージング結果をplot
-        if self.import_mode[0]=="Image (MBS; A-1)":
+        if self.import_mode[0]=="Image (MBS; A-1)/General text":
             self.smoothed_image_pltctrl=ImagePlotControl(self.image[0].y, self.x, self.z_smoothed.T, 
-                                                title=title, 
+                                                title=f'[Smoothing]\n{title}',
                                                 plt_interaction=True, figsize_h=3.5, figsize_w=4,
                                                 x_label=self.image[0].y_label, y_label=self.image[0].x_label, z_label=self.image[0].z_label, 
                                                 colormap=COLORMAP,
@@ -464,8 +468,8 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
             # インスタンスを管理するリスト
             self.fig_instance_lst.append(self.smoothed_image_pltctrl)
 
-        if self.import_mode[0]=="Spectrum (MBS; A-1)":
-            self.smoothed_edcs_pltctrl = PlotControl(title=title, plt_interaction=True, initialize_figs=False, figsize_w=3.5, figsize_h=3.75, fontsize=10,
+        if self.import_mode[0]=="Spectrum (MBS; A-1)/General text":
+            self.smoothed_edcs_pltctrl = PlotControl(title=f'[Smoothing]\n{title}', plt_interaction=True, initialize_figs=False, figsize_w=3.5, figsize_h=5.5, fontsize=10,
                                             x_label=self.image[0].x_label, y_label="Intensity (cps)")
             # figureの画面上の位置を制御
 
@@ -500,96 +504,40 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
             self.fig_instance_lst.append(self.rmse_pltctrl)
 
 
-    # def do_second_derivative_button_callback(self):
-    #     if self.image[0].EF is not None:
-    #         self.x=self.image[0].EF
-    #     else:
-    #         self.x=self.image[0].x
+    def do_second_derivative_button_callback(self):
+        if self.image[0].EF is not None:
+            self.x=self.image[0].EF
+        else:
+            self.x=self.image[0].x
 
-    #     self.peak_energy_lst=[]
-    #     self.peak_intensity_lst=[]
-    #     self.image_peak_intensity_lst=[]
+        self.peak_energy_lst=[]
+        self.ddy_peak_intensity_lst=[]
+        self.edcs_peak_intensity_lst=[]
 
-    #     # smoothing
-    #     self.smooth_data()
+        # smoothing
+        self.smooth_data()
 
-    #     # 二次微分を行う
-    #     self.z_second_derivative=self.image[0].second_derivative(self.z_smoothed, axis=0)
-    #     print("Second derivative is finished.")
+        # 二次微分を行う
+        self.z_second_derivative=self.image[0].second_derivative(self.z_smoothed, axis=0)
+        print("Second derivative is finished.")
         
-    #     # ピーク検出
-    #     if self.detect_peak_checkbox.get():
-    #         if self.smoothing_method=='None':
-    #             self.detect_peak(mode='raw_data')
-    #         elif has_SECOND_DERIVATIVE_FRAME:
-    #             self.detect_peak(mode="second_derivative")
-    #         elif has_CURVATURE_FRAME:
-    #             self.detect_peak(mode='curvature')
+        # ピーク検出
+        if self.detect_peak_checkbox.get():
+            if self.smoothing_method=='None':
+                self.detect_peak(mode='raw_data')
+            elif has_SECOND_DERIVATIVE_FRAME:
+                self.detect_peak(mode="second_derivative")
+            elif has_CURVATURE_FRAME:
+                self.detect_peak(mode='curvature')
         
 
-    #     # title
-    #     title=f'Peak Plot: {self.image[0].filename}'
-    #     if self.smoothing_method=='Savitzky-Golay' and self.has_curvature_frame==False:
-    #         title=f'Smoothing: {self.image[0].filename}\nSG params: Oder {int(self.smoothing_param_values[0])}, {int(self.smoothing_param_values[1])} point(s), {int(self.smoothing_param_values[2])} iteration(s)'
-    #     elif self.smoothing_method=='Binomial' and self.has_curvature_frame==False:
-    #         title=f'Smoothing: {self.image[0].filename}\nSG params: Oder {int(self.smoothing_param_values[0])}, {int(self.smoothing_param_values[1])} iteration(s)'
+        # title
+        title=f'Peak Plot: {self.image[0].filename}'
+        if self.smoothing_method=='Savitzky-Golay' and self.has_curvature_frame==False:
+            title=f'Filename: {self.image[0].filename}\nSG params: Oder {int(self.smoothing_param_values[0])}, {int(self.smoothing_param_values[1])} point(s), {int(self.smoothing_param_values[2])} iteration(s)'
+        elif self.smoothing_method=='Binomial' and self.has_curvature_frame==False:
+            title=f'Filename: {self.image[0].filename}\nSG params: Oder {int(self.smoothing_param_values[0])}, {int(self.smoothing_param_values[1])} iteration(s)'
 
-    #     # plot
-    #     if self.import_mode[0]=="Image (MBS; A-1)":
-    #         self.image_second_derivative_pltctrl=ImagePlotControl(
-    #             self.image[0].y, self.x, self.z_second_derivative.T, 
-    #             colormap=COLORMAP_SECOND_DERIVATIVE,
-    #             title=title, 
-    #             plt_interaction=True, figsize_h=3.5, figsize_w=4,
-    #             x_label=self.image[0].y_label, y_label=self.image[0].x_label, z_label=self.image[0].z_label, 
-    #             slider=True
-    #             )
-    #         if self.image[0].x_label=="Binding Energy (eV)":
-    #             self.image_second_derivative_pltctrl.ax.invert_yaxis()
-    #         # # figureの出現位置を制御
-    #         # self.image_second_derivative_pltctrl.show_figure_at_position(400, 400)
-    #         # インスタンス管理リストに追加
-    #         self.fig_instance_lst.append(self.image_second_derivative_pltctrl)
-
-    #     if self.import_mode[0]=="Spectrum (MBS; A-1)":
-    #         # 二次微分プロット
-    #         self.edcs_second_derivative_pltctrl = PlotControl(title=title, plt_interaction=True, initialize_figs=False, 
-    #                                                         figsize_w=3.5, figsize_h=3.75, fontsize=10,
-    #                                                         x_label=self.image[0].x_label, y_label="Intensity (arb. units)"
-    #                                                         )
-    #         # offset value
-    #         self.y_2der_offset = np.arange(len(self.z_smoothed))*float(self.y_offset_entry.get())
-    #         # plot追加
-    #         if self.detect_peak_checkbox.get():
-    #             self.peak_plot_pltctrl = PlotControl(title=title, plt_interaction=True, initialize_figs=False, 
-    #                                                             figsize_w=3.5, figsize_h=3.75, fontsize=10,
-    #                                                             x_label=self.image[0].x_label, y_label="Intensity (cps)"
-    #                                                             )
-
-    #         for i in range(len(self.z_smoothed)):
-    #             # 二次微分
-    #             self.edcs_second_derivative_pltctrl.add_spectrum(self.x, self.z_second_derivative[i]-self.y_2der_offset[i], label="", linewidth=1, scatter=False, color=SPECTRAL_COLOR)
-    #             if self.detect_peak_checkbox.get():
-    #                 # 二次微分ピーク
-    #                 self.edcs_second_derivative_pltctrl.add_spectrum(self.peak_energy_lst[i], 
-    #                                                                 [intensity - self.y_2der_offset[i] for intensity in self.peak_intensity_lst[i]], # yはリスト型なので内包表記した。
-    #                                                                 label="", linewidth=1, scatter=True, color="None", edgecolor="black", linestyle="|", s=15)
-
-    #                 # import dataにピークプロットを重ねる
-    #                 self.peak_plot_pltctrl.add_spectrum(self.x, self.image[0].z[i]+self.y_edc_offset[i], label="", linewidth=1, scatter=False, color=SPECTRAL_COLOR)
-    #                 self.peak_plot_pltctrl.add_spectrum(self.peak_energy_lst[i], np.array(self.image_peak_intensity_lst[i])+self.y_edc_offset[i],
-    #                                                         label="", linewidth=1, scatter=True, color="None", edgecolor="black", linestyle="|", s=15 )
-    #                 self.fig_instance_lst.append(self.peak_plot_pltctrl)
-
-    #         if self.image[0].x_label=="Binding Energy (eV)":
-    #             self.edcs_second_derivative_pltctrl.ax.invert_xaxis()
-    #             self.edcs_second_derivative_pltctrl.update_canvas()
-    #             if self.detect_peak_checkbox.get():
-    #                 self.peak_plot_pltctrl.ax.invert_xaxis()
-    #                 self.peak_plot_pltctrl.update_canvas()
-
-    #         # インスタンス管理リストに追加
-    #         self.fig_instance_lst.append(self.edcs_second_derivative_pltctrl)
 
     def do_curvature_button_callback(self):
         """
@@ -597,8 +545,8 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
         スムージングを実行し、その後に曲率解析を行う。
         """
         self.peak_energy_lst=[]
-        self.peak_intensity_lst=[]
-        self.image_peak_intensity_lst=[]
+        self.ddy_peak_intensity_lst=[]
+        self.edcs_peak_intensity_lst=[]
         if self.image[0].EF is not None:
             self.x=self.image[0].EF
         else:
@@ -656,71 +604,6 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
                                         image_window_pos=(400, 200)  # curvatureで位置指定したいなら
                                         )     
 
-    #     # 結果をplot
-    #     if self.import_mode[0]=="Image (MBS; A-1)":
-    #         self.image_curvature_pltctrl=ImagePlotControl(
-    #             self.image[0].y, self.x, self.z_curvature.T, 
-    #             colormap=COLORMAP_SECOND_DERIVATIVE,
-    #             title=f"Curvature Analysis:\n{self.image[0].filename}", 
-    #             plt_interaction=True, figsize_h=3.5, figsize_w=4,
-    #             x_label=self.image[0].y_label, y_label=self.image[0].x_label, z_label=self.image[0].z_label, 
-    #             slider=True)
-    #         # figureの出現位置を制御
-    #         self.image_curvature_pltctrl.show_figure_at_position(400, 200)
-    #         if self.image[0].x_label=="Binding Energy (eV)":
-    #             self.image_curvature_pltctrl.ax.invert_yaxis()
-    #         # インスタンス管理リストに追加
-    #         self.fig_instance_lst.append(self.image_curvature_pltctrl)
-
-    #     elif self.import_mode[0]=="Spectrum (MBS; A-1)":
-    #         # curvature plot
-    #         self.edcs_curvature_pltctrl = PlotControl(title=f"Curvature:\n{self.image[0].filename}", plt_interaction=True, initialize_figs=False, 
-    #                                                             figsize_w=3.5, figsize_h=4, fontsize=10,
-    #                                         x_label=self.image[0].x_label, y_label="Intensity (arb. units)")
-    #         # figureの出現位置を制御
-    #         # self.edcs_curvature_pltctrl.show_figure_at_position(400, 200)
-    #         # plot追加
-    #         for i in range(len(self.z_smoothed)):
-    #             # offset value
-    #             self.y_2der_offset = np.arange(len(self.z_smoothed))*float(self.y_offset_entry.get())
-    #             self.edcs_curvature_pltctrl.add_spectrum(self.x, self.z_curvature[i]-self.y_2der_offset[i], 
-    #                                                     label="", linewidth=1, scatter=False, color=SPECTRAL_COLOR)
-    #             if self.detect_peak_checkbox.get():
-    #                 self.edcs_curvature_pltctrl.add_spectrum(self.peak_energy_lst[i], self.peak_intensity_lst[i]-self.y_2der_offset[i], 
-    #                                                                 label="", linewidth=1, scatter=True, color="black", linestyle="|")
-    #         if self.image[0].x_label=="Binding Energy (eV)":
-    #             self.edcs_curvature_pltctrl.ax.invert_xaxis()
-    #         self.edcs_curvature_pltctrl.update_canvas()
-
-    #         # plot追加
-    #         if self.detect_peak_checkbox.get():
-    #             self.peak_plot_pltctrl = PlotControl(title=f"Peak Plot:\n{self.image[0].filename}", plt_interaction=True, initialize_figs=False, 
-    #                                                             figsize_w=3.5, figsize_h=3.75, fontsize=10,
-    #                                                             x_label=self.image[0].x_label, y_label="Intensity (cps)"
-    #                                                             )
-
-    #         for i in range(len(self.z_smoothed)):
-    #             # 二次微分
-    #             if self.detect_peak_checkbox.get():
-    #                 # 二次微分ピーク
-    #                 self.edcs_curvature_pltctrl.add_spectrum(self.peak_energy_lst[i], 
-    #                                                                 [intensity - self.y_2der_offset[i] for intensity in self.peak_intensity_lst[i]], # yはリスト型なので内包表記した。
-    #                                                                 label="", linewidth=1, scatter=True, color="None", edgecolor="black", linestyle="|", s=15)
-
-    #                 # import dataにピークプロットを重ねる
-    #                 self.peak_plot_pltctrl.add_spectrum(self.x, self.image[0].z[i]+self.y_edc_offset[i], label="", linewidth=1, scatter=False, color=SPECTRAL_COLOR)
-    #                 self.peak_plot_pltctrl.add_spectrum(self.peak_energy_lst[i], np.array(self.image_peak_intensity_lst[i])+self.y_edc_offset[i],
-    #                                                         label="", linewidth=1, scatter=True, color="None", edgecolor="black", linestyle="|", s=15)
-    #                 self.fig_instance_lst.append(self.peak_plot_pltctrl)
-                    
-    #         if self.image[0].x_label=="Binding Energy (eV)":
-    #             if self.detect_peak_checkbox.get():
-    #                 self.peak_plot_pltctrl.ax.invert_xaxis()
-    #                 self.peak_plot_pltctrl.update_canvas()
-
-    #         # インスタンス管理リストに追加
-    #         self.fig_instance_lst.append(self.edcs_curvature_pltctrl)
-
 
     def _plot_analysis_result_common(self, z_result, title, *, image_window_pos=None):
         """
@@ -737,8 +620,8 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
             (x, y) を渡したら show_figure_at_position(x,y) を呼ぶ
         """
 
-        # --- Image (MBS; A-1) ---
-        if self.import_mode[0] == "Image (MBS; A-1)":
+        # --- Image (MBS; A-1)/General text ---
+        if self.import_mode[0] == "Image (MBS; A-1)/General text":
             pltctrl = ImagePlotControl(
                 self.image[0].y, self.x, z_result.T,
                 colormap=COLORMAP_SECOND_DERIVATIVE,
@@ -757,70 +640,87 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
             self.fig_instance_lst.append(pltctrl)
             return
 
-        # --- Spectrum (MBS; A-1) ---
-        if self.import_mode[0] != "Spectrum (MBS; A-1)":
-            return
-
-        edc_ctrl = PlotControl(
-            title=title, plt_interaction=True, initialize_figs=False,
-            figsize_w=3.5, figsize_h=3.75, fontsize=10,
+        # EDC stack plot
+        ddy_edc_ctrl = PlotControl(
+            title=f'[Second derivative]\n{title}', plt_interaction=True, initialize_figs=False,
+            figsize_w=3.5, figsize_h=5.5, fontsize=10,
             x_label=self.image[0].x_label, y_label="Intensity (arb. units)"
         )
 
         # offset は一度だけ
         y_off = np.arange(len(z_result)) * float(self.y_offset_entry.get())
 
-        peak_ctrl = None
+        edc_stack_ctrl = None
         if self.detect_peak_checkbox.get():
-            peak_ctrl = PlotControl(
-                title=f"Peak Plot:\n{self.image[0].filename}",
+            edc_stack_ctrl = PlotControl(
+                title=f"[EDCs stacking]\n{title}",
                 plt_interaction=True, initialize_figs=False,
-                figsize_w=3.5, figsize_h=3.75, fontsize=10,
+                figsize_w=3.5, figsize_h=5.5, fontsize=10,
                 x_label=self.image[0].x_label, y_label="Intensity (cps)"
             )
 
         for i in range(len(z_result)):
             # 解析結果（2der / curvature 共通）
-            edc_ctrl.add_spectrum(
+            ddy_edc_ctrl.add_spectrum(
                 self.x, z_result[i] - y_off[i],
+                label="", linewidth=1, scatter=False, color=SPECTRAL_COLOR
+            )
+
+            # 元スペクトル 
+            edc_stack_ctrl.add_spectrum(
+                self.x, self.image[0].z[i] + self.y_edc_offset[i],
                 label="", linewidth=1, scatter=False, color=SPECTRAL_COLOR
             )
 
             if self.detect_peak_checkbox.get():
 
-                # 元スペクトル 
-                peak_ctrl.add_spectrum(
-                    self.x, self.image[0].z[i] + self.y_edc_offset[i],
-                    label="", linewidth=1, scatter=False, color=SPECTRAL_COLOR
-                )
-
                 # 2次微分/curvature上のピーク
-                edc_ctrl.add_spectrum(
+                ddy_edc_ctrl.add_spectrum(
                     self.peak_energy_lst[i],
-                    [p - y_off[i] for p in self.peak_intensity_lst[i]],
+                    [p - y_off[i] for p in self.ddy_peak_intensity_lst[i]],
                     label="", linewidth=1.5, scatter=True,
                     color="None", edgecolor="black", linestyle="|", s=15, alpha=0.7
                 )
 
                 # 元スペクトル上のピーク
-                peak_ctrl.add_spectrum(
+                edc_stack_ctrl.add_spectrum(
                     self.peak_energy_lst[i],
-                    np.array(self.image_peak_intensity_lst[i]) + self.y_edc_offset[i],
+                    np.array(self.edcs_peak_intensity_lst[i]) + self.y_edc_offset[i],
                     label="", linewidth=1.5, scatter=True,
                     color="None", edgecolor="black", linestyle="|", s=15, alpha=0.7
                 )
+            
 
         # BE軸なら反転
         if self.image[0].x_label == "Binding Energy (eV)":
-            edc_ctrl.ax.invert_xaxis()
-            edc_ctrl.update_canvas()
-            if peak_ctrl:
-                peak_ctrl.ax.invert_xaxis()
-                peak_ctrl.update_canvas()
+            ddy_edc_ctrl.ax.invert_xaxis()
+            ddy_edc_ctrl.update_canvas()
 
-        self.fig_instance_lst.append(edc_ctrl)
-        if peak_ctrl:
-            self.fig_instance_lst.append(peak_ctrl)
+            if edc_stack_ctrl:
+                edc_stack_ctrl.ax.invert_xaxis()
+                edc_stack_ctrl.update_canvas()
+
+        self.fig_instance_lst.append(ddy_edc_ctrl)
+        if edc_stack_ctrl:
+            self.fig_instance_lst.append(edc_stack_ctrl)
+
+        # band dispersion plot (E vs k//)
+        # --- Spectrum (MBS; A-1)/General text ---
+        if self.import_mode[0] == "Spectrum (MBS; A-1)/General text":
+            if self.detect_peak_checkbox.get():
+                # peak 波数プロット
+                self.band_dispersion_pltctrl = PlotControl(title=f'[Peak plot]\n{title}', plt_interaction=True, initialize_figs=False, figsize_w=3, figsize_h=3.5, fontsize=10,
+                                                x_label=self.image[0].y_label, y_label=self.image[0].x_label)
+                
+                # plot追加
+                for i in range(len(self.peak_energy_lst)):
+                    for j in range(len(self.peak_energy_lst[i])):
+                        self.band_dispersion_pltctrl.add_spectrum(self.image[0].y_slice_center_edcs[i], self.peak_energy_lst[i][j], 
+                                                                label=None, color='tab:blue')
+                
+            if self.image[0].x_label=="Binding Energy (eV)":
+                self.band_dispersion_pltctrl.ax.invert_yaxis()
+            self.fig_instance_lst.append(self.band_dispersion_pltctrl)
 
 
     def do_second_derivative_button_callback(self):
@@ -830,12 +730,12 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
             self.x = self.image[0].x
 
         self.peak_energy_lst = []
-        self.peak_intensity_lst = []
-        self.image_peak_intensity_lst = []
+        self.ddy_peak_intensity_lst = []
+        self.edcs_peak_intensity_lst = []
 
         # smoothing
         self.smooth_data()
-
+        
         # 二次微分
         self.z_second_derivative = self.image[0].second_derivative(self.z_smoothed, axis=0)
         print("Second derivative is finished.")
@@ -845,40 +745,29 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
             if self.smoothing_method == 'None':
                 self.detect_peak(mode='raw_data')
             else:
-                self.detect_peak(mode="second_derivative")   # ←ここは必ずこれに統一
+                self.detect_peak(mode="second_derivative")
 
         # title
         title = f'Peak Plot: {self.image[0].filename}'
         if self.smoothing_method == 'Savitzky-Golay' and self.has_curvature_frame == False:
             title = (
-                f'Smoothing: {self.image[0].filename}\n'
+                f'Filename: {self.image[0].filename}\n'
                 f'SG params: Oder {int(self.smoothing_param_values[0])}, {int(self.smoothing_param_values[1])} point(s), {int(self.smoothing_param_values[2])} iteration(s)'
             )
         elif self.smoothing_method == 'Binomial' and self.has_curvature_frame == False:
             title = (
-                f'Smoothing: {self.image[0].filename}\n'
+                f'Filename: {self.image[0].filename}\n'
                 f'Binomial params: Oder {int(self.smoothing_param_values[0])}, {int(self.smoothing_param_values[1])} iteration(s)'
             )
 
-        # plot (common)
         self._plot_analysis_result_common(self.z_second_derivative, title)
 
-
-        # peak detect
-        if self.detect_peak_checkbox.get():
-            self.detect_peak(mode="curvature")
-
-        # plot (common)
-        self._plot_analysis_result_common(
-                                        self.z_curvature,
-                                        title=f"Curvature Analysis:\n{self.image[0].filename}",
-                                        image_window_pos=(400, 200)
-                                        )
 
     def detect_peak(self, mode):
         another_z=None # 初期化
         if mode == "second_derivative":
             z = copy.deepcopy(self.z_second_derivative)
+            # print("a")
         elif mode == "curvature":
             z = copy.deepcopy(self.z_curvature)
         elif mode == 'raw_data':
@@ -908,9 +797,8 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
         # print(another_z)
         # peak detect
         self.order_detect_peak=self.order_entry.get()
-        self.peak_energy_lst, self.peak_intensity_lst, self.image_peak_intensity_lst = self.image[0].detect_peaks_in_nested_list(x, z, order=self.order_detect_peak, another_list=another_z)
+        self.peak_energy_lst, self.ddy_peak_intensity_lst, self.edcs_peak_intensity_lst = self.image[0].detect_peaks_in_nested_list(x, z, order=self.order_detect_peak, another_list=another_z)
         
-
 
     def save_button_callback(self):
         directory_path = os.path.dirname(self.image[0].path) # ディレクトリパスを取得
@@ -927,7 +815,7 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
             self.save_data(savefile_path, mode='2der', save_peaks=False)
             # peak detect file 作成
             if self.detect_peak_checkbox.get():
-                if self.import_mode[0]!="Image (MBS; A-1)":
+                if self.import_mode[0]!="Image (MBS; A-1)/General text":
                     savefile_path = savefile_path.replace(".txt", "Peak.txt")
                     self.save_data(savefile_path, mode='2der', save_peaks=True)
 
@@ -941,7 +829,7 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
             self.save_data(savefile_path, mode='curX')
             # peak detect file 作成
             if self.detect_peak_checkbox.get():
-                if self.import_mode[0]!="Image (MBS; A-1)":
+                if self.import_mode[0]!="Image (MBS; A-1)/General text":
                     savefile_path = savefile_path.replace(".txt", "Peak.txt")
                     self.save_data(savefile_path, mode='curX', save_peaks=True)
 
@@ -954,7 +842,7 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
             self.save_data(savefile_path, mode='curXY')
             # peak detect file 作成
             if self.detect_peak_checkbox.get():
-                if self.import_mode[0]!="Image (MBS; A-1)":
+                if self.import_mode[0]!="Image (MBS; A-1)/General text":
                     savefile_path = savefile_path.replace(".txt", "Peak.txt")
                     self.save_data(savefile_path, mode='curXY', save_peaks=True)
 
@@ -1031,7 +919,7 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
                         y_slice_center=1
                         if self.image[0].y_slice_center_edcs!=[]:
                             y_slice_center=self.image[0].y_slice_center_edcs[i]
-                        data.append(f'{y_slice_center}\t{self.peak_energy_lst[i][j]}\t{self.image_peak_intensity_lst[i][j]}')
+                        data.append(f'{y_slice_center}\t{self.peak_energy_lst[i][j]}\t{self.edcs_peak_intensity_lst[i][j]}')
             
             else:
                 # 二次微分解析の場合

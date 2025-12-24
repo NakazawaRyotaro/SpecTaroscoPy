@@ -10,7 +10,7 @@
 
 //Create the Load A1 data menu in VisARPES 
 Menu "VisARPES"
-"Load SpecTaro image/1", Load_SpectrumAnalyzerData()
+"Load SpecTaro Image/1", Load_SpectrumAnalyzerData()
 End
 
 //Function starts
@@ -141,10 +141,34 @@ Function/S Load_SpectrumAnalyzerData()
             // the data you are loading is organized.
             //LoadWave/A/D/J/W/K=0/V={" "," $",0,0}/L={0,2,0,0,0} path
             
+				// Image表示            
+            	Display;DelayUpdate
+				AppendImage $wname
+				
+				// 軸の向き		
+				ModifyGraph swapXY=1
+				SetAxis/A/R right
+				SetAxis/A/R left
+				// そのた軸設定
+				ModifyGraph gfSize=18
+				ModifyGraph mirror=2
+				ModifyGraph standoff(bottom)=0
+				ModifyGraph standoff(left)=0
+				// label name
+				Label bottom "\\f02k\\f00\\B∥\\M (Å\\S-1\\M)"
+				Label left "Binding Energy (eV)"
+				// intensity color
+				ModifyImage $wname ctab= {*,*,YellowHot,0}
+				
+				//ColorTnner表示。
+				DuplicateCheckCTKF()	
+            
+            
         endfor
     endif
-    
+       
 
-    return outputPaths      // Will be empty if user canceled
+   return outputPaths      // Will be empty if user canceled
+
 
 End
