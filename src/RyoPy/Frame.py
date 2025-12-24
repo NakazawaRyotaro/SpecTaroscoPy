@@ -513,7 +513,7 @@ class SaveDataFrame2(customtkinter.CTkFrame):
         label = customtkinter.CTkLabel(self, text=self.header_name, font=(FONT_TYPE, 11))
         label.grid(row=0, column=0, columnspan=1, padx=10, sticky="w")
 
-         # loadボタン
+         # saveボタン
         save_file_button = customtkinter.CTkButton(self, command=self.save_button_callback, text="Save", font=self.fonts, width=120)
         save_file_button.grid(row=1, column=0, padx=(0,10), pady=(0,10), sticky="w")
 

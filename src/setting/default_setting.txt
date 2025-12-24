@@ -3,4 +3,4 @@
 user	
 folder_path	
 font_type	meiryo
-version	6.5.2
+version	6.5.3

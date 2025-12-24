@@ -3003,7 +3003,8 @@ class App(customtkinter.CTk):
             axis_lst=['VL', 'EF', 'Ek']
         
         for axis in axis_lst:
-            self.peim.save_data(data_type='edcs', axis=axis, filename=self.filename_edcs_entry.get())
+            for data_type in ['edcs', 'edcs_offseted']:
+                self.peim.save_data(data_type=data_type, axis=axis, filename=self.filename_edcs_entry.get())
 
 
 #################################################################################################

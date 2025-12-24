@@ -662,7 +662,7 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
         for i in range(len(z_result)):
             # 解析結果（2der / curvature 共通）
             ddy_edc_ctrl.add_spectrum(
-                self.x, z_result[i] - y_off[i],
+                self.x, z_result[i] + y_off[i],
                 label="", linewidth=1, scatter=False, color=SPECTRAL_COLOR
             )
 
@@ -851,7 +851,7 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
         def save(savefile_path):
             # DATA: 以降の行を取得
             data_index = self.image[0].l.index('DATA:') + 1
-            print(data_index)
+            # print(data_index)
             data_lines = self.image[0].l[data_index:]
 
             # ヘッダー作成

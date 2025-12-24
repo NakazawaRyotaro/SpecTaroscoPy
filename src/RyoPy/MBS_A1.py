@@ -373,7 +373,8 @@ class MBS_A1:
                     else:
                         row[j] = 0
             if not label_flag:
-                data.append(row)
+                if row!= []:
+                    data.append(row)
         # print(data)
         return data
 
@@ -395,7 +396,7 @@ class MBS_A1:
         
         if '--- EDCs Stacking ---' in self.l or '[EDCs Stacking]' in self.l:
             self.z_offset_edcs_lst, _=rpa.get_list_next_to_search_term(self.l, 'Z Offset EDCs')
-            print(self.z_offset_edcs_lst)
+            # print(self.z_offset_edcs_lst)
         self.z_paths.append(z_)
         return z_
 
@@ -709,6 +710,9 @@ class MBS_A1:
             filename_new=filename+"_EF"
         elif axis=="VL":
             filename_new=filename+"_VL"
+        # EDCのオフセット印加データ
+        if data_type=='edcs_offseted':
+            filename_new=filename_new+"_Offset"
 
         # fileのパスを作成
         directory_path = os.path.dirname(self.path) # ディレクトリパスを取得
@@ -786,7 +790,7 @@ class MBS_A1:
                 added_header.append(f"Start X Slice\t{self.x_slice_min}")
                 added_header.append(f"End X Slice\t{self.x_slice_max}")
                 added_header.append(f"X Slice Center List\t{self.x_slice_center}")
-            elif data_type=='edcs':
+            elif data_type=='edcs' or data_type=='edcs_offseted':
                 added_header.append("--- EDCs Stacking ---")
                 added_header.append("Y Slice Center\t" + ' '.join(map(str, self.y_slice_center_edcs)))
                 added_header.append("Z Offset EDCs\t" + ' '.join(map(str, self.z_offset_edcs_lst)))
@@ -835,19 +839,19 @@ class MBS_A1:
 
             # 強度label, 強度データ決定
             # EDC, YDC共通
-            elif data_type=='edc' or data_type=='edcs':
-                # X label
-                if axis=="Ek":
-                    x_label=f"Ek_{label}"
-                elif axis=="EF":
-                    x_label=f"EF_{label}"
-                elif axis=="VL":
-                    x_label=f"VL_{label}"
+            # elif data_type=='edc' or data_type=='edcs':
+            # X label
+            if axis=="Ek":
+                x_label=f"Ek_{label}"
+            elif axis=="EF":
+                x_label=f"EF_{label}"
+            elif axis=="VL":
+                x_label=f"VL_{label}"
 
                 # 強度データ EDC
-                if data_type=='edc':
-                    z=self.z_edc
-                    z_bg=self.z_edc_offseted
+            if data_type=='edc':
+                z=self.z_edc
+                z_bg=self.z_edc_offseted
 
             if data_type=='edc' or data_type=='ydc':
                 # Z offsetかけるとそれをラベルに追加する。
@@ -874,11 +878,14 @@ class MBS_A1:
                             intensity_data.append(f"{x[i]}\t{z[i]}")
                 
             # 強度データ EDCs
-            elif data_type=='edcs':                        
-                # label
+            elif data_type=='edcs' or data_type=='edcs_offseted':                        
+                # label (legend) 作成
                 legend_lst = [f"{x_label}"]
                 for i in range(len(self.y_slice_center_edcs)):
-                    legend_lst.append(f"{label}_{np.round(self.y_slice_center_edcs[i], 3)}")
+                    if data_type=='edcs':   
+                        legend_lst.append(f"{label}_{np.round(self.y_slice_center_edcs[i], 3)}")
+                    elif data_type=='edcs_offseted':
+                        legend_lst.append(f"{label}_{np.round(self.y_slice_center_edcs[i], 3)}_Offseted")
                 # y_legend_lstを適切にフォーマットして文字列に変換
                 added_header.append("\t".join(legend_lst))
                 
@@ -886,7 +893,11 @@ class MBS_A1:
                 for i in range(len(x)):
                     data_lst = [f"{x[i]}"]
                     for j in range(len(self.y_slice_center_edcs)):
-                        data_lst.append(f"{self.z_edcs[j][i]}")
+                        if data_type=='edcs':
+                            data_lst.append(f"{self.z_edcs[j][i]}")
+                        elif data_type=='edcs_offseted':
+                            # print(self.z_offset_edcs_lst[j])
+                            data_lst.append(f"{self.z_edcs[j][i]+self.z_offset_edcs_lst[j]}")
                     # data_lstを適切にフォーマットして文字列に変換
                     intensity_data.append("\t".join(data_lst))
 
