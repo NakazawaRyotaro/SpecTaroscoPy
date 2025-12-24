@@ -677,7 +677,7 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
                 # 2次微分/curvature上のピーク
                 ddy_edc_ctrl.add_spectrum(
                     self.peak_energy_lst[i],
-                    [p - y_off[i] for p in self.ddy_peak_intensity_lst[i]],
+                    [p + y_off[i] for p in self.ddy_peak_intensity_lst[i]],
                     label="", linewidth=1.5, scatter=True,
                     color="None", edgecolor="black", linestyle="|", s=15, alpha=0.7
                 )
@@ -913,13 +913,13 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
             # peak detect dataのsave
             if save_peaks:
                 filename=self.image[0].filename.replace('.txt', '')
-                data.append(f'yc_{filename}\tx_{filename}_peak\t{filename}_peak')
+                data.append(f'yc_{filename}_Peak\tx_{filename}_Peak\t{filename}_Peak\t{filename}_OffsetedPeak')
                 for i in range(len(self.peak_energy_lst)):
                     for j in range(len(self.peak_energy_lst[i])):
                         y_slice_center=1
                         if self.image[0].y_slice_center_edcs!=[]:
                             y_slice_center=self.image[0].y_slice_center_edcs[i]
-                        data.append(f'{y_slice_center}\t{self.peak_energy_lst[i][j]}\t{self.edcs_peak_intensity_lst[i][j]}')
+                        data.append(f'{y_slice_center}\t{self.peak_energy_lst[i][j]}\t{self.edcs_peak_intensity_lst[i][j]}\t{self.edcs_peak_intensity_lst[i][j]+self.y_edc_offset[i]}')
             
             else:
                 # 二次微分解析の場合
