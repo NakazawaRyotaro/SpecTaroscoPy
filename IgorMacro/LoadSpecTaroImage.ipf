@@ -2,6 +2,7 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 
 //Author: Keisuke Fukutani (2021)
+//Modification: Ryotaro Nakazawa (2025)
 //This macro can be used to load multiple 2D data in .txt format created by A1 (MBS) software into Igor at once.
 //Compile and execute "Load A1 data" under VisARPES menu and select one or more A1 text files to load them all.
 //It is highly recommended, although not required, that the files names do not start with a number or special character to avoid malfunctions 

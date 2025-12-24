@@ -1,8 +1,8 @@
 #pragma rtGlobals=1		// Use modern global access method.
 
 //Color tuner 
-//Keisuke Fukutani (2019)
-//Edited by R Nakazawa (2025)
+//Author: Keisuke Fukutani (2019)
+//Modification: Ryotaro Nakazawa (2025)
 
 
 Menu "VisARPES"
