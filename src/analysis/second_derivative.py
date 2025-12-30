@@ -230,7 +230,7 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
         # EDC(s)のときのY offset value
         y_offset_label = customtkinter.CTkLabel(master=self, text="Y Offset")
         y_offset_label.grid(row=20, column=0, padx=10, pady=(0,5), sticky="ew")
-        self.y_offset_entry = customtkinter.CTkEntry(master=self, placeholder_text="cps", width=120, font=self.fonts) # 入力
+        self.y_offset_entry = customtkinter.CTkEntry(master=self, placeholder_text="強度", width=120, font=self.fonts) # 入力
         self.y_offset_entry.grid(row=20, column=1, padx=(0,10), pady=(0,5), sticky="ew")
         self.y_offset_entry.insert(0, 0)
 
@@ -648,7 +648,7 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
         )
 
         # offset は一度だけ
-        y_off = np.arange(len(z_result)) * float(self.y_offset_entry.get())
+        y_off = np.arange(len(z_result)) * float(self.y_offset_entry.get()) * -1
 
         edc_stack_ctrl = None
         if self.detect_peak_checkbox.get():

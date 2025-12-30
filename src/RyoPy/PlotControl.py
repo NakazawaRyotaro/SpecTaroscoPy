@@ -327,8 +327,8 @@ class PlotControl:
         plt.grid(which = "major", axis="y", linestyle="-")
         # レイアウト、軸再調整
         self.ax.autoscale()
-        plt.tight_layout()
-        # plt.show() #?
+        # plt.tight_layout() # run time error回避のためコメントアウト
+        plt.show() 
         self.fig.canvas.draw_idle()
 
     def change_yscale(self):

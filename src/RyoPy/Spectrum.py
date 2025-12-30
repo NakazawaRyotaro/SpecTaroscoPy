@@ -288,6 +288,7 @@ class Spectrum:
 
         raise ValueError("ラベル行を自動検出できませんでした。")
 
+
     # 非推奨だがデータのnanに対応している
     # def load_xy_data_from_file_auto_old(self, x_legend, y_legend, path=None, plot_spectrum=False):
     #     """
@@ -415,6 +416,7 @@ class Spectrum:
     #         axs[1].legend()
     #         plt.tight_layout()
     #         plt.show()
+
 
     def load_y2_data_from_info_of_file(self, filepath, key_y2=None, key_y2_label=None):
         """

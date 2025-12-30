@@ -204,7 +204,7 @@ class PlotDataFrame(customtkinter.CTkScrollableFrame): # GUI右部
         self.canvas = FigureCanvasTkAgg(self.pltctrl_observed_spectrum.fig, master=self)
         self.canvas.get_tk_widget().grid(row=2,column=0, padx=20, pady=10, sticky="new")     
 
-    def plot_spread_function(self, x, y, function_type):
+    def plot_spread_function(self, x, y, function_type, path=None, x_legend=None, y_legend=None):
          # plot機能をインポート
         self.pltctrl_spread_function = PlotControl()
         # label = customtkinter.CTkLabel(master=self, text="------------------------------", font=self.fonts)
@@ -217,7 +217,7 @@ class PlotDataFrame(customtkinter.CTkScrollableFrame): # GUI右部
             self.pltctrl_spread_function.plot_spectrum(x, y, "Instrumental\nfunction")
         # インポートするとき
         elif function_type=="Import":
-            label = customtkinter.CTkLabel(master=self, text="[Instrumental Function]\nPATH: "+self.s_spectrum.path+"\nX: "+self.s_spectrum.x_legend+"\nY: "+self.s_spectrum.y_legend, font=self.fonts, wraplength=250)
+            label = customtkinter.CTkLabel(master=self, text="[Instrumental Function]\nPATH: "+str(path)+"\nX: "+str(x_legend)+"\nY: "+str(y_legend), font=self.fonts, wraplength=250)
             label.grid(row=1, column=1, padx=10, pady=(0,10), sticky="ewns")
             # plotを行う (この時点では表示されない)
             self.pltctrl_spread_function.plot_spectrum(x, y, "Instrumental\nfunction")
@@ -632,7 +632,7 @@ class AnalyzeDataFrame(customtkinter.CTkFrame): # GUI中部
         smoothing_label = customtkinter.CTkLabel(master=self, text='Smoothing:', )
         smoothing_label.grid(row=2, column=0, padx=10, pady=(0,10), sticky="ew")
         self.smoothing_combo = customtkinter.CTkComboBox(master=self, font=self.fonts,
-                                                    values=["Auto-/Cross-correlation", ""],
+                                                    values=["Auto-/Cross-correlation", "None"],
                                                     command=self.choice_smoothing_combo_callback)
         self.smoothing_combo.grid(row=2, column=1, padx=(0,10), pady=(0,10), sticky="ew")
 
@@ -740,6 +740,10 @@ class AnalyzeDataFrame(customtkinter.CTkFrame): # GUI中部
             self.y_s_legend_combo = customtkinter.CTkComboBox(master=self, font=self.fonts, values=["---Y Label---"])
             self.y_s_legend_combo.grid(row=1, column=4, padx=5, pady=(0,10), sticky="w")
 
+            # 開くボタン 生成
+            load_s_button = customtkinter.CTkButton(master=self, command=self.load_s_button_callback, text="Load", font=self.fonts)
+            load_s_button.grid(row=1, column=5, padx=(5,10), pady=(0,10), sticky="ew")
+
     def open_file_s_button_callback(self):
         """
         開くボタンが押されたときのコールバック。
@@ -747,36 +751,30 @@ class AnalyzeDataFrame(customtkinter.CTkFrame): # GUI中部
         # FitSpectrumのインスタンスを作成
         # grobal変数にするのがカギ [他のclass(flame) でもspectrumインスタンスを使用でき、
         # インスタンス spectrum (= spectrum) の関数 (method) やインスタンス変数を spectrum.xxx で呼び出せる] 
-        s_spectrum = Spectrum()
-        s_spectrum.open_csv_file(idir=IDIR)
-        
-        # 開くボタン 生成
-        load_s_button = customtkinter.CTkButton(master=self, command=self.load_s_button_callback, text="Load", font=self.fonts)
-        load_s_button.grid(row=1, column=5, padx=(5,10), pady=(0,10), sticky="ew")
-        
-        # # 今開いたファイル名
-        # if self.loaded_file_path:
-        #     self.loaded_file_path.destroy() # 初期化
-        # self.loaded_file_path = customtkinter.CTkLabel(master=self, text=spectrum.path, wraplength=410)
-        # self.loaded_file_path.grid(row=2, column=1, columnspan=4, padx=10, pady=(0,10), sticky="ew")
-
+        self.s_spectrum = Spectrum()
+        # s_spectrum.open_csv_file(idir=IDIR)
+        self.s_spectrum.read_labels_from_file_auto(idir=IDIR)
+    
         # combo更新
         self.x_s_legend_combo = customtkinter.CTkComboBox(master=self, font=self.fonts,
-                                            values=s_spectrum.label_list)
+                                            values=self.s_spectrum.label_list)
         self.x_s_legend_combo.grid(row=1, column=3, padx=5, pady=(0,10), sticky="w")
 
         self.y_s_legend_combo = customtkinter.CTkComboBox(master=self, font=self.fonts,
-                                            values=s_spectrum.label_list)
+                                            values=self.s_spectrum.label_list)
         self.y_s_legend_combo.grid(row=1, column=4, padx=5, pady=(0,10), sticky="w")  
 
     def load_s_button_callback(self):
         # spectrum dataの読み込み
-        self.s_spectrum.load_data_from_csv_file(self.x_s_legend_combo.get(), self.y_s_legend_combo.get(), plot_spectrum=False)
+        print(self.x_s_legend_combo.get(), self.y_s_legend_combo.get())
+        self.s_spectrum.load_xy_data_from_file_auto(self.x_s_legend_combo.get(), self.y_s_legend_combo.get(), plot_spectrum=False)
         
         # plot_data_frameを初期化
         # self.destroy_widgets(self.master.plot_data_frame, 3)
         # 読み込んだスペクトルを表示
-        self.master.plot_data_frame.plot_spread_function(self.s_spectrum.x, self.s_spectrum.y, self.spread_combo.get())
+        self.master.plot_data_frame.plot_spread_function(self.s_spectrum.x, self.s_spectrum.y, self.spread_combo.get(),
+                                                         self.s_spectrum.path, self.x_s_legend_combo.get(), self.y_s_legend_combo.get())
+
 
     def choice_smoothing_combo_callback(self, hoge):
         self.destroy_widgets(2, 2)
@@ -885,6 +883,10 @@ class AnalyzeDataFrame(customtkinter.CTkFrame): # GUI中部
             self.spectrum.smooth_spectrum_with_auto_cross_colleration(y, self.spectrum.s)
             print(len(x),len(self.spectrum.i_ac))
             self.master.plot_data_frame.plot_auto_cross_correlation(x, y)
+
+        elif self.smoothing_combo.get()=="None":
+            self.spectrum.i_ac = copy.deepcopy(y)
+            self.spectrum.s_cc = copy.deepcopy(self.spectrum.s)
 
         # rmseの範囲を決定
         if self.x_rmse_min_checkbox.get():
