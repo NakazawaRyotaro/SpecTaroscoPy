@@ -2902,7 +2902,7 @@ class App(customtkinter.CTk):
             if i <= 50:
                 # i が50以下のときはプロットを続ける
                 self.edcs_stack_pltctrl.add_spectrum(self.x_offseted, self.peim.z_edcs[i]+self.peim.z_offset_edcs_lst[i], 
-                                                    str(np.round(self.peim.y_slice_center_edcs[i], 2)) + " " + c_label, 
+                                                    str(np.round(self.peim.y_slice_center_edcs[i], 3)) + " " + c_label, 
                                                     color=SPECTRAL_COLOR, scatter=False, linewidth=1.5)   
                 
             elif res is None:
@@ -2918,7 +2918,7 @@ class App(customtkinter.CTk):
             if res == "y":
                 # resがyならプロットを続ける
                 self.edcs_stack_pltctrl.add_spectrum(self.x_offseted, self.peim.z_edcs[i]+self.peim.z_offset_edcs_lst[i], 
-                                                    str(np.round(self.peim.y_slice_center_edcs[i], 2)) + " " + c_label, 
+                                                    str(np.round(self.peim.y_slice_center_edcs[i], 3)) + " " + c_label, 
                                                     color="tab:blue", scatter=False, linewidth=1.5)
 
         # legendの位置と大きさ
@@ -2938,6 +2938,9 @@ class App(customtkinter.CTk):
         self.edcs_stack_autorange_button_callback()
         print("Stacked EDCs were plotted.")
 
+        self.edcs_ystep_entry.delete(0, customtkinter.END)
+        self.edcs_ystep_entry.insert(0, str(self.peim.y_step_edcs))
+        
 
     def update_edcs_stack_range_event(self, event=None):
         # 軸調整

@@ -616,6 +616,7 @@ class MBS_A1:
             self.z_edc=np.sum(z[rpa.get_idx_of_the_nearest(y, self.y_slice_min): rpa.get_idx_of_the_nearest(y, self.y_slice_max)], axis=0)
             # self.z_edc_offseted=copy.deepcopy(self.z_edc) # offsetかける用
         elif mode=="return":
+            # print("直前", rpa.get_idx_of_the_nearest(y, self.y_slice_min), rpa.get_idx_of_the_nearest(y, self.y_slice_max))
             return np.sum(z[rpa.get_idx_of_the_nearest(y, self.y_slice_min): rpa.get_idx_of_the_nearest(y, self.y_slice_max)], axis=0)
 
     def generate_a_ydc(self, z, x, x_slice_min, x_slice_max, mode="ydc"):
@@ -629,8 +630,8 @@ class MBS_A1:
         self.x_slice_max=x_slice_max
         self.x_slice_center = np.round((self.x_slice_max+self.x_slice_min)/2, 4)
         z=z.T
+
         # EDC作成
-        # print(self.y_slice_min, self.y_slice_max)
         if mode=="ydc":
             z_ydc=np.sum(z[rpa.get_idx_of_the_nearest(x, self.x_slice_min): rpa.get_idx_of_the_nearest(x, self.x_slice_max)], axis=0)
             self.z_ydc=z_ydc.T
@@ -656,10 +657,14 @@ class MBS_A1:
         self.z_edcs=[]
         self.y_slice_center_edcs=[]
         self.z_offset_edcs_lst=[]
-        self.y_step_edcs=y_step_edcs
         
-        idx_num=int(self.y_step_edcs/abs(y[0]-y[1])) # 切り出しEDC一本(unit)あたりのyのpixel数
-        print("Yステップ(pixel数):", idx_num)
+        idx_num=int(y_step_edcs/abs(y[0]-y[1])) # 切り出しEDC一本(unit)あたりのyのpixel数
+        
+        # self.y_step_edcs= rpa.decimalRound(idx_num*abs(y[0]-y[1]), 10) # 再計算して正確なy_step_edcsにする。
+        self.y_step_edcs= np.round(idx_num*abs(y[0]-y[1]), ORDER_Y) # 再計算して正確なy_step_edcsにする。
+        print("Yステップ:", self.y_step_edcs)
+        print("Yステップ (pixel数):", idx_num)
+
         if len(y)/idx_num >= 200:
             mode='None'
             
@@ -679,19 +684,15 @@ class MBS_A1:
                 self.y_slice_center_edcs.append(y_slice_edcs_center_temp) # EDCs stackのlegend nameをリストに格納
         
         if mode=="normal":
-            i=0 # offsetをかけるためのカウンター
-            idx_min=-2
-            idx_max=-2
-            # print(len(y))
-            # print(idx_num)
+            idx_min=0 # -1になるように初期化
+            idx_max=len(y)-2*idx_num # whileを回すためにlen(y)に設定
             while abs(idx_max)<len(y)-idx_num and abs(idx_min)<len(y)-idx_num:
-                idx_max=int(idx_min+1)
+                idx_max=int(idx_min-1)
                 idx_min=int(idx_max-idx_num+1)
                 self.y_slice_center_edcs.append(np.round((y[idx_min]+y[idx_max])/2, ORDER_Y)) # sliceのセンター
-                # print(y[idx_start], y[idx_end])
+                # print("指示", idx_min, idx_max)
                 z_edc_temp=self.generate_an_edc(z, y, y[idx_min], y[idx_max], mode="return") # EDCの切り出し。EDCs stack mode (返り値が１次元リスト。インスタンス変数ではない)
                 self.z_edcs.append(z_edc_temp) #EDCs stackリストにアペンド。
-                i+=1
             # print(len(self.y_slice_center_edcs))
             # print(len(self.z_edcs))
 
