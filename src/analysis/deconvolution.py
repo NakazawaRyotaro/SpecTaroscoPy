@@ -212,19 +212,18 @@ class PlotDataFrame(customtkinter.CTkScrollableFrame): # GUI右部
         # gaussianのとき
         if function_type=="Gaussian":
             label = customtkinter.CTkLabel(master=self, text="[Instrumental Function]\nFunction: " + self.spectrum.s_function + "\nFWHM: "+str(self.spectrum.s_fwhm)+"eV", font=self.fonts)
-            label.grid(row=1, column=1, padx=10, pady=(0,10), sticky="ewns")
+            label.grid(row=3, column=0, padx=10, pady=(0,10), sticky="ewns")
             # plotを行う (この時点では表示されない)
             self.pltctrl_spread_function.plot_spectrum(x, y, "Instrumental\nfunction")
         # インポートするとき
         elif function_type=="Import":
             label = customtkinter.CTkLabel(master=self, text="[Instrumental Function]\nPATH: "+str(path)+"\nX: "+str(x_legend)+"\nY: "+str(y_legend), font=self.fonts, wraplength=250)
-            label.grid(row=1, column=1, padx=10, pady=(0,10), sticky="ewns")
-            # plotを行う (この時点では表示されない)
-            self.pltctrl_spread_function.plot_spectrum(x, y, "Instrumental\nfunction")
-        # プロットをキャンバスに張り付ける
-        self.pltctrl_spread_function.fig.tight_layout()
-        self.canvas = FigureCanvasTkAgg(self.pltctrl_spread_function.fig, master=self)
-        self.canvas.get_tk_widget().grid(row=2,column=1, padx=20, pady=10, sticky="new")
+        label.grid(row=3, column=0, padx=10, pady=(0,10), sticky="ewns") # label (text) をgridに配置
+        
+        self.pltctrl_spread_function.plot_spectrum(x, y, "Instrumental\nfunction") # plotを行う (この時点では表示されない)
+        self.pltctrl_spread_function.fig.tight_layout() # layout調整
+        self.canvas = FigureCanvasTkAgg(self.pltctrl_spread_function.fig, master=self) # プロットをキャンバスに張り付ける
+        self.canvas.get_tk_widget().grid(row=4,column=0, padx=20, pady=10, sticky="new") # canvasをgridに配置
 
     def plot_auto_cross_correlation(self, x, y):
         label = customtkinter.CTkLabel(master=self, text="------------------------------", font=self.fonts)
@@ -248,7 +247,7 @@ class PlotDataFrame(customtkinter.CTkScrollableFrame): # GUI右部
         # プロットをキャンバスに張り付ける
         self.pltctrl_cross_correration.fig.tight_layout() # layout調整
         self.canvas = FigureCanvasTkAgg(self.pltctrl_cross_correration.fig, master=self)
-        self.canvas.get_tk_widget().grid(row=8,column=1, padx=20, pady=10, sticky="new")    
+        self.canvas.get_tk_widget().grid(row=9,column=0, padx=20, pady=10, sticky="new")    
 
     def plot_deconvoluted_spectra(self, x, y, iteration_number_lst):
         """
