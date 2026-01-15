@@ -364,7 +364,7 @@ class SaveDataFrame(customtkinter.CTkFrame): #GUI下部
 class LoadImageDataFrame(customtkinter.CTkFrame):
 # image data
 # load data frame
-    def __init__(self, master=None, header_name="Load Data", has_plot_data_frame=None, **kwargs):
+    def __init__(self, master=None, header_name="--- Load Data ---", has_plot_data_frame=None, **kwargs):
         super().__init__(master)
 
         self.fonts = (FONT_TYPE, 15)
@@ -390,8 +390,7 @@ class LoadImageDataFrame(customtkinter.CTkFrame):
 
         self.file_type_combo = customtkinter.CTkComboBox(self, font=self.fonts, command=None, 
                                                     values=["Image (MBS; A-1)/General text",
-                                                            "Spectrum (MBS; A-1)/General text",  
-                                                            # "EDC(s) (csv or txt)"
+                                                            "Spectra (MBS; A-1)/General text",  
                                                             ])
         self.file_type_combo.grid(row=1, column=1, padx=(0, 10), pady=(0,5), sticky="ew")
 
@@ -406,7 +405,7 @@ class LoadImageDataFrame(customtkinter.CTkFrame):
         # open_file_button.grid(row=0, column=4, padx=(0,8), pady=(10,5), sticky="w")
         # パスを表示
         
-        file = customtkinter.CTkLabel(self, text='Imported File:')
+        file = customtkinter.CTkLabel(self, text=f'Filename:')
         file.grid(row=2, column=0, padx=(10,10), pady=(0,5), sticky="ew")
         self.file_label=None
 

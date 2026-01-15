@@ -14,7 +14,7 @@ from PIL import Image, ImageTk
 from pathlib import Path
 
 # sysモジュールをインポート（Pythonのパスや環境に関する操作をするため）
-import sys
+import sys      
 # osモジュールをインポート（ファイルパスの操作や環境関連の処理に使う）
 import os
 # sys.path（Pythonのモジュール検索パス）に新しいパスを追加する --> srcディレクトリ が追加される
@@ -377,7 +377,7 @@ class AnalyzeDataFrame(customtkinter.CTkScrollableFrame): # GUI中部
 
     def save_fit_edcs_button_callback(self):
         print('*** Save EDCs fitting results ***')
-        foldername='SpectrumAnalyzer_Fitting'
+        foldername='STPy_Fitting'
         savefilename=self.filename_fit_edcs.get()
         rpa.create_folder_at_current_path(self.spectrum.path, foldername)
         self.savefile_path = self.spectrum.path.replace(self.spectrum.filename, os.path.join(foldername, savefilename))

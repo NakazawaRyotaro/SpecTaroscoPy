@@ -211,7 +211,7 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
 
     def setup_form(self):
         # フレームのラベルを表示
-        label = customtkinter.CTkLabel(self, text='--- Smoothing ---', font=(FONT_TYPE, 11))
+        label = customtkinter.CTkLabel(self, text='Smoothing', font=(FONT_TYPE, 11))
         label.grid(row=0, column=0, columnspan=1, padx=10, sticky="w")
 
         file_label = customtkinter.CTkLabel(self, text='Method', width=120)
@@ -244,10 +244,10 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
 
         # フレームのラベルを表示
         if self.has_second_derivative_frame:
-            label = customtkinter.CTkLabel(self, text="--- Second Derivative ---", font=(FONT_TYPE, 11))
+            label = customtkinter.CTkLabel(self, text="Second Derivative", font=(FONT_TYPE, 11))
         elif self.has_curvature_frame:
-            label = customtkinter.CTkLabel(self, text="--- Curvature ---", font=(FONT_TYPE, 11))
-        label.grid(row=48, column=0, columnspan=1, padx=10, pady=(10,5), sticky="w")
+            label = customtkinter.CTkLabel(self, text="Curvature", font=(FONT_TYPE, 11))
+        label.grid(row=48, column=0, columnspan=1, padx=10, sticky="w")
 
         # curvature method
         if self.has_curvature_frame==True:
@@ -288,25 +288,27 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
         x_min_label = customtkinter.CTkLabel(master=self, text="Min X")
         x_min_label.grid(row=94, column=0, padx=10, pady=(0,5), sticky="ew")
         self.x_min_entry = customtkinter.CTkEntry(master=self, placeholder_text="最小エネルギー (eV)", width=120, font=self.fonts) # 入力
-        self.x_min_entry.grid(row=94, column=1, padx=(0,10), pady=(0,5), sticky="ew") 
+        self.x_min_entry.grid(row=94, column=1, padx=(0,10), pady=(0,5), sticky="ew")
+
+        # # save filename
+        # customtkinter.CTkLabel(master=self, text="Output Filename", font=self.fonts).grid(row=95, column=0, padx=10, pady=(0,5), sticky="ew")
+        # self.savefile_entry = customtkinter.CTkEntry(master=self, placeholder_text="Filename", width=120, font=self.fonts) # 入力
+        # self.savefile_entry.grid(row=95, column=1, padx=(0,10), pady=(0,5), sticky="ew")   
 
         # do it ボタン作成
-        do_it_button = customtkinter.CTkButton(master=self, command=self.do_it_button_callback, text="Do It", font=self.fonts)
+        if self.has_second_derivative_frame:
+            do_it_button = customtkinter.CTkButton(master=self, command=self.do_second_derivative_button_callback, text="Do It", font=self.fonts)
+        elif self.has_curvature_frame:
+            do_it_button = customtkinter.CTkButton(master=self, command=self.do_curvature_button_callback, text="Do It", font=self.fonts)
         do_it_button.grid(row=100, column=1, padx=(0,10), pady=(0,5), sticky="ew")
         #Close ボタン生成
         close_button = customtkinter.CTkButton(master=self, command=self.close_figs_button_callback, text="Close Figures", font=self.fonts)
         close_button.grid(row=100, column=0, padx=(10,10), pady=(0,5), sticky="ew")
         
 
-        # data save部分
-        customtkinter.CTkLabel(self, text="--- Save Data ---", font=(FONT_TYPE, 11)).grid(row=198, column=0, columnspan=1, padx=10, pady=(10,5), sticky="w")
-        customtkinter.CTkLabel(master=self, text="Output Filename", font=self.fonts).grid(row=199, column=0, padx=10, pady=(0,5), sticky="ew")
-        self.savefile_entry = customtkinter.CTkEntry(master=self, placeholder_text="Filename", width=120, font=self.fonts) # 入力
-        self.savefile_entry.grid(row=199, column=1, padx=(0,10), pady=(0,5), sticky="ew")  
         #Save ボタン生成
         close_button = customtkinter.CTkButton(master=self, command=self.save_button_callback, text="Save", font=self.fonts)
         close_button.grid(row=200, column=1, padx=(0,10), pady=(0,10), sticky="ew")
-
 
     def choice_smoothing_method_combo_callback(self, _): # 2から49行目までを使用できる。
         # widgetsの初期化
@@ -430,9 +432,6 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
         if self.smoothing_method == "Savitzky-Golay":
             order, window_size, iterations = self.smoothing_param_values
             print(f"スムージングパラメータ - 次数: {order}, 点数: {window_size}, 繰り返し数: {iterations}")
-            if window_size % 2 == 0:
-                messagebox.showerror("Parameter Error", "Window Size must be an odd number.")
-                return
             self.z_smoothed = self.image[0].smooth_image_SG(
                                                             self.image[0].z, 
                                                             order, window_size, iterations
@@ -510,6 +509,41 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
             # self.rmse_pltctrl.show_figure_at_position(1000, 100)
             self.rmse_pltctrl.fig.tight_layout()
             self.fig_instance_lst.append(self.rmse_pltctrl)
+
+
+    def do_second_derivative_button_callback(self):
+        if self.image[0].EF is not None:
+            self.x=self.image[0].EF
+        else:
+            self.x=self.image[0].x
+
+        self.peak_energy_lst=[]
+        self.ddy_peak_intensity_lst=[]
+        self.edcs_peak_intensity_lst=[]
+
+        # smoothing
+        self.smooth_data()
+
+        # 二次微分を行う
+        self.z_second_derivative=self.image[0].second_derivative(self.z_smoothed, axis=0)
+        print("Second derivative is finished.")
+        
+        # ピーク検出
+        if self.detect_peak_checkbox.get():
+            if self.smoothing_method=='None':
+                self.detect_peak(mode='raw_data')
+            elif has_SECOND_DERIVATIVE_FRAME:
+                self.detect_peak(mode="second_derivative")
+            elif has_CURVATURE_FRAME:
+                self.detect_peak(mode='curvature')
+        
+
+        # title
+        title=f'Peak Plot: {self.image[0].filename}'
+        if self.smoothing_method=='Savitzky-Golay' and self.has_curvature_frame==False:
+            title=f'Filename: {self.image[0].filename}\nSG params: Oder {int(self.smoothing_param_values[0])}, {int(self.smoothing_param_values[1])} point(s), {int(self.smoothing_param_values[2])} iteration(s)'
+        elif self.smoothing_method=='Binomial' and self.has_curvature_frame==False:
+            title=f'Filename: {self.image[0].filename}\nSG params: Oder {int(self.smoothing_param_values[0])}, {int(self.smoothing_param_values[1])} iteration(s)'
 
 
     def do_curvature_button_callback(self):
@@ -652,7 +686,7 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
                     self.peak_energy_lst[i],
                     [p + y_off[i] for p in self.ddy_peak_intensity_lst[i]],
                     label="", linewidth=1.5, scatter=True,
-                    color="None", edgecolor="black", linestyle="|", s=15, alpha=1
+                    color="None", edgecolor="black", linestyle="|", s=15, alpha=0.7
                 )
 
                 # 元スペクトル上のピーク
@@ -660,7 +694,7 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
                     self.peak_energy_lst[i],
                     np.array(self.edcs_peak_intensity_lst[i]) + self.y_edc_offset[i],
                     label="", linewidth=1.5, scatter=True,
-                    color="None", edgecolor="black", linestyle="|", s=15, alpha=1
+                    color="None", edgecolor="black", linestyle="|", s=15, alpha=0.7
                 )
             
 
@@ -695,27 +729,6 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
                 self.band_dispersion_pltctrl.ax.invert_yaxis()
             self.fig_instance_lst.append(self.band_dispersion_pltctrl)
 
-    def do_it_button_callback(self):
-        # 二次微分 or curvature 解析を実行. plot
-        if self.has_second_derivative_frame:
-            self.do_second_derivative_button_callback()
-        elif self.has_curvature_frame:
-            self.do_curvature_button_callback()
-        
-        # loadしたfilename 更新
-        filename=self.image[0].filename
-        
-        # 二次微分のときの処理
-        if self.has_second_derivative_frame:
-            savefile_path = filename.replace(".txt", "_2Der.txt")
-        # 曲率解析のときの処理
-        elif self.has_curvature_frame and self.curvature_method=="1D (Energy)":
-            savefile_path = filename.replace(".txt", "_CurX.txt") # セーブファイル名
-        elif self.has_curvature_frame and self.curvature_method=="2D":
-            savefile_path = filename.replace(".txt", "_CurXY.txt") # セーブファイル名
-        # Entryに表示
-        self.savefile_entry.delete(0, customtkinter.END)
-        self.savefile_entry.insert(0, savefile_path)
 
     def do_second_derivative_button_callback(self):
         if self.image[0].EF is not None:
@@ -799,37 +812,40 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
         
         # 二次微分のときの処理
         if self.has_second_derivative_frame:
-            # folder作成
-            foldername=f"STPy_SecondDerivative"
+            # fileのパスを作
+            foldername=f"STPy_{VERSION_NUMBER}_SecondDerivative"
             foldername=foldername.replace('.','_')
             rpa.create_folder_at_current_path(self.image[0].path, foldername)
-            
-            # filepath 作成
-            savefile_path = os.path.join(directory_path, foldername, self.savefile_entry.get())
+            savefile_path = os.path.join(directory_path, foldername, self.image[0].filename)
+            savefile_path = savefile_path.replace(".txt", "_2Der.txt")
             # 二次微分解析ファイル作成
             self.save_data(savefile_path, mode='2der', save_peaks=False)
             # peak detect file 作成
             if self.detect_peak_checkbox.get():
                 if self.import_mode[0]!="Image (MBS; A-1)/General text":
+                    savefile_path = savefile_path.replace(".txt", "Peak.txt")
                     self.save_data(savefile_path, mode='2der', save_peaks=True)
 
         # 曲率解析のときの処理
         elif self.has_curvature_frame and self.curvature_method=="1D (Energy)":
-            foldername=f"STPy_1DCurvatureX"
+            foldername=f"STPy_{VERSION_NUMBER}_1DCurvatureX"
             foldername=foldername.replace('.','_')
             rpa.create_folder_at_current_path(self.image[0].path, foldername) # フォルダ作成
-            savefile_path = os.path.join(directory_path, foldername, self.savefile_entry.get()) # セーブファイルのパス作成
+            savefile_path = os.path.join(directory_path, foldername, self.image[0].filename) # セーブファイルのパス作成
+            savefile_path = savefile_path.replace(".txt", "_CurX.txt") # セーブファイル名修正
             self.save_data(savefile_path, mode='curX')
             # peak detect file 作成
             if self.detect_peak_checkbox.get():
                 if self.import_mode[0]!="Image (MBS; A-1)/General text":
+                    savefile_path = savefile_path.replace(".txt", "Peak.txt")
                     self.save_data(savefile_path, mode='curX', save_peaks=True)
 
         elif self.has_curvature_frame and self.curvature_method=="2D":
-            foldername=f"STPy_2DCurvature" 
+            foldername=f"STPy_{VERSION_NUMBER}_2DCurvature"
             foldername=foldername.replace('.','_')
             rpa.create_folder_at_current_path(self.image[0].path, foldername)
-            savefile_path = os.path.join(directory_path, foldername, self.savefile_entry.get())
+            savefile_path = os.path.join(directory_path, foldername, self.image[0].filename)
+            savefile_path = savefile_path.replace(".txt", "CurXY.txt")     
             self.save_data(savefile_path, mode='curXY')
             # peak detect file 作成
             if self.detect_peak_checkbox.get():
@@ -905,7 +921,7 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
             # peak detect dataのsave
             if save_peaks:
                 filename=self.image[0].filename.replace('.txt', '')
-                data.append(f'yc_{filename}_Peak\tx_{filename}_Peak\t{filename}_Peak\t{filename}_PeakOffset')
+                data.append(f'yc_{filename}_Peak\tx_{filename}_Peak\t{filename}_Peak\t{filename}_OffsetedPeak')
                 for i in range(len(self.peak_energy_lst)):
                     for j in range(len(self.peak_energy_lst[i])):
                         y_slice_center=1

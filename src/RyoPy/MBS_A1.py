@@ -698,7 +698,7 @@ class MBS_A1:
 
     def save_data(self, filename, data_type, axis):
         # resultsというフォルダを作る
-        foldername=f'STPy_{VERSION_NUMBER}_PESImage'
+        foldername=f'STPy_PESImage'
         foldername = foldername.replace('.', '_')
         # print(foldername)
         rpa.create_folder_at_current_path(self.path, foldername)
@@ -735,7 +735,7 @@ class MBS_A1:
             # 追加するヘッダー
             added_header=[]
             added_header.append('')  # 空行
-            added_header.append("[SpecTaroscoPy — PES image]")
+            added_header.append("[SpecTaroscoPy – PES image]")
             added_header.append("Author\tR Nakazawa")
             added_header.append("Contact\tnakazawa@ims.ac.jp")
             added_header.append(f"Version\t{VERSION_NUMBER}")

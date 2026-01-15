@@ -1047,10 +1047,10 @@ class Spectrum:
 
         # resultsというフォルダを作る
         if analysis=='deconvolution':
-            foldername=f'STPy_{VERSION_NUMBER}_Deconvolution'
+            foldername=f'STPy_Deconvolution'
             foldername = foldername.replace('.', '_')
         elif analysis=='fitting':
-            foldername=f'STPy_{VERSION_NUMBER}_Fitting'
+            foldername=f'STPy_Fitting'
             foldername = foldername.replace('.', '_')
         rpa.create_folder_at_current_path(self.path, foldername)
 
