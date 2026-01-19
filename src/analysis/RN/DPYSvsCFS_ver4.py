@@ -20,7 +20,7 @@ sys.path.append(
         os.path.join(
             # os.path.dirname(__file__): このスクリプトファイル（.py）が存在するディレクトリのパスを取得
             os.path.dirname(__file__),
-            '..'  # 「..」は1つ上の階層（親ディレクトリ）を意味する
+            '..', '..'  # 「..」は1つ上の階層（親ディレクトリ）を意味する
         )
     )
 )
@@ -30,13 +30,14 @@ from RyoPy import defs_for_analysis as rpa
 from RyoPy.Spectrum import Spectrum
 
 # srcディレクトリを取得
-SRC_PATH = Path(__file__).resolve().parent.parent
+SRC_PATH = Path(__file__).resolve().parent.parent.parent
 # ファイルパスを統一的に管理
 default_setting_path = os.path.join(SRC_PATH, "setting", "default_setting.txt")
 second_derivative_setting_path = os.path.join(SRC_PATH, "setting", "second_derivative_setting.txt")
 
 # ファイル選択するときの初期値
 VERSION, has_IDIR = rpa.open_file_and_get_words_next_to_search_term(default_setting_path, "version", type="str")
+
 
 # -------------------- モジュール読み込み終わり -----------------
 """
@@ -52,6 +53,7 @@ PYSはHS-UPSスペクトルを積分したものとする。
 PEで規格化しなかった。
 微分前のスムージングはSG法を使用する。
 """
+
 
 # -------------------- 初期条件 --------------------
 normalize_T=False
@@ -102,8 +104,6 @@ mult_y_pys_dif=1.2e-0
 # mult_y_pys_dif=3e-11
 mult_y_pys_dif_dif=1e-5
 
-####################################################################
-
 
 ########################################################################
 # 現在のスクリプトの位置から '2つ' 上のディレクトリへ移動
@@ -113,12 +113,13 @@ mult_y_pys_dif_dif=1e-5
 # base_path = Path(__file__).resolve().parent.parent.parent
 
 # 絶対パスを指定する
-base_path = Path("/Users/ryotaro/Library/Group Containers/UBF8T346G9.OneDriveStandaloneSuite/OneDrive.noindex/OneDrive/ドキュメント/論文執筆/2025_ACS_BEE/図/PYS_DPYSvsCFS")
+base_path = Path("/Users/ryotaro/Documents/論文執筆/2025_ACS_BEE/図/PYS_DPYSvsCFS")
 # フォルダAの中の fileB を指定
 import_file_path_cfs = base_path / filename_cfs
 import_file_path_pys = base_path / filename_pys
 print(f"import_file_path: {import_file_path_cfs}")
 import_file_path_window= base_path / '20210915新PF割る現PF.csv'
+
 ########################################################################
 if save_output:
     import matplotlib.pyplot

@@ -481,7 +481,7 @@ class App(customtkinter.CTk):
         self.y_slice_width_slider.set(np.round(abs(self.y_max-self.y_min), ORDER_Y))
 
 
-        # Energy slice (YDS)
+        # Energy slice (MDC)
         self.x_slice_min_entry.delete(0, customtkinter.END)
         self.x_slice_max_entry.delete(0, customtkinter.END)
         self.x_slice_center_entry.delete(0, customtkinter.END)
@@ -621,10 +621,11 @@ class App(customtkinter.CTk):
         self.mcp_spectrum_pltctrl.show_figures()
 
     def do_mcp_correction_callback(self):
-        if self.peim.y_label!=r"$k_{\parallel} \ \mathrm{(\AA^{-1})}$":
+        if self.peim.y_label != r"$k_{\parallel} \ \mathrm{(\AA^{-1})}$": # MCP補正はpixelに対して行うので k//では使用させない
             if self.z_ini is None:
                 self.z_ini = copy.deepcopy(self.peim.z)
                 self.z_paths_ini = copy.deepcopy(self.peim.z_paths)
+                print("MCP correction: Original data saved.")
 
             # MCP補正
             self.peim.z=(self.peim.z.T/self.mcp_spectrum_y).T
@@ -669,8 +670,10 @@ class App(customtkinter.CTk):
 
             # データを戻す
             self.peim.z=copy.deepcopy(self.z_ini)
-            self.z_image=copy.deepcopy(self.peim.z)
+            self.z_image=copy.deepcopy(self.z_ini)
             self.peim.z_paths=copy.deepcopy(self.z_paths_ini)
+            self.z_image_paths=copy.deepcopy(self.z_paths_ini)
+
             self.z_min=np.amin(self.peim.z)
             self.z_max=np.amax(self.peim.z)
             self.update_range_event()
@@ -1025,6 +1028,9 @@ class App(customtkinter.CTk):
         # print(self.peim.kh)
         # EDC用にそれぞれのimported dataも軸変換
         self.x_offseted_paths = self.peim.EF_offseted_paths
+        
+        if self.switch_value_angkhconversion.get():
+            self.z_image = copy.deepcopy(self.peim.z_kh_offseted)
 
         # plot用 x軸更新
         if self.switch_value_VL.get(): # VL
@@ -1216,43 +1222,40 @@ class App(customtkinter.CTk):
         self.range_frame = customtkinter.CTkFrame(self.image_plot_frame, fg_color='gray20')
         self.range_frame.grid(row=0, column=1, padx=(10, 10), pady=(5, 10), sticky="ew")
         # title
-        self.range_label = customtkinter.CTkLabel(self.range_frame, text='XY Range', font=self.fonts)
-        self.range_label.grid(row=0, column=0, padx=10, pady=(10,10), sticky="ew", columnspan=2)
+        customtkinter.CTkLabel(self.range_frame, text='XY Range', font=self.fonts).grid(row=0, column=0, padx=10, pady=(10,10), sticky="ew", columnspan=2)
 
-        # 最大エネルギーラベル
-        x_lim_max_label = customtkinter.CTkLabel(self.range_frame, text='Max Energy')
-        x_lim_max_label.grid(row=1, column=0, padx=(10, 10), pady=(0,5), sticky="ew")
-        self.x_lim_max_entry = customtkinter.CTkEntry(self.range_frame, placeholder_text="eV", width=120, font=self.fonts)
-        self.x_lim_max_entry.grid(row=1, column=1, padx=(10, 10), pady=(0,5), sticky="ew")
-        self.x_lim_max_entry.bind("<Return>", self.update_range_event)      
         # 最小エネルギーラベル
-        x_lim_min_label = customtkinter.CTkLabel(self.range_frame, text='Min Energy')
-        x_lim_min_label.grid(row=2, column=0, padx=(10, 10), pady=(0,5), sticky="ew")
+        customtkinter.CTkLabel(self.range_frame, text='Min Energy').grid(row=1, column=0, padx=(10, 10), pady=(0,5), sticky="ew")
         self.x_lim_min_entry = customtkinter.CTkEntry(self.range_frame, placeholder_text="eV", width=80, font=self.fonts)
-        self.x_lim_min_entry.grid(row=2, column=1, padx=(10, 10), pady=(0,5), sticky="ew")
+        self.x_lim_min_entry.grid(row=1, column=1, padx=(10, 10), pady=(0,5), sticky="ew")
         self.x_lim_min_entry.bind("<Return>", self.update_range_event)
 
-        # 最大yラベル
-        z_lim_max_label = customtkinter.CTkLabel(self.range_frame, text='Max Y', width=120)
-        z_lim_max_label.grid(row=3, column=0, padx=(10,10), pady=(0,5), sticky="ew")
-        self.y_lim_max_entry = customtkinter.CTkEntry(self.range_frame, placeholder_text="", width=120, font=self.fonts)
-        self.y_lim_max_entry.grid(row=3, column=1, padx=10, pady=(0,5), sticky="ew")
-        self.y_lim_max_entry.bind("<Return>", self.update_range_event)
+        # 最大エネルギーラベル
+        customtkinter.CTkLabel(self.range_frame, text='Max Energy').grid(row=2, column=0, padx=(10, 10), pady=(0,5), sticky="ew")
+        self.x_lim_max_entry = customtkinter.CTkEntry(self.range_frame, placeholder_text="eV", width=120, font=self.fonts)
+        self.x_lim_max_entry.grid(row=2, column=1, padx=(10, 10), pady=(0,5), sticky="ew")
+        self.x_lim_max_entry.bind("<Return>", self.update_range_event)      
+
         # 最小yラベル
-        y_lim_min_label = customtkinter.CTkLabel(self.range_frame, text='Min Y')
-        y_lim_min_label.grid(row=4, column=0, padx=(10, 10), pady=(0,5), sticky="ew")
+        customtkinter.CTkLabel(self.range_frame, text='Min Y').grid(row=3, column=0, padx=(10, 10), pady=(0,5), sticky="ew")
         self.y_lim_min_entry = customtkinter.CTkEntry(self.range_frame, placeholder_text="", width=80, font=self.fonts)
-        self.y_lim_min_entry.grid(row=4, column=1, padx=(10, 10), pady=(0,5), sticky="ew")
+        self.y_lim_min_entry.grid(row=3, column=1, padx=(10, 10), pady=(0,5), sticky="ew")
         self.y_lim_min_entry.bind("<Return>", self.update_range_event)
 
-        x_offset_label = customtkinter.CTkLabel(self.range_frame, text='Offset Ek (not Eb!)')
-        x_offset_label.grid(row=6, column=0, padx=10, pady=(0,5), sticky="ew")
+        # 最大yラベル
+        customtkinter.CTkLabel(self.range_frame, text='Max Y', width=120).grid(row=4, column=0, padx=(10,10), pady=(0,5), sticky="ew")
+        self.y_lim_max_entry = customtkinter.CTkEntry(self.range_frame, placeholder_text="", width=120, font=self.fonts)
+        self.y_lim_max_entry.grid(row=4, column=1, padx=10, pady=(0,5), sticky="ew")
+        self.y_lim_max_entry.bind("<Return>", self.update_range_event)
+
+        # X offset
+        customtkinter.CTkLabel(self.range_frame, text='Offset Ek (not Eb!)').grid(row=6, column=0, padx=10, pady=(0,5), sticky="ew")
         self.x_offset_entry = customtkinter.CTkEntry(self.range_frame, placeholder_text="eV", width=120, font=self.fonts)
         self.x_offset_entry.grid(row=6, column=1, padx=10, pady=(0,5), sticky="ew") 
         self.x_offset_entry.bind("<Return>", self.update_offset_event)
+        
         # y offset
-        y_offset_label = customtkinter.CTkLabel(self.range_frame, text='Offset Y (not k//!)')
-        y_offset_label.grid(row=7, column=0, padx=10, pady=(0,33), sticky="ew")
+        customtkinter.CTkLabel(self.range_frame, text='Offset Y (not k//!)').grid(row=7, column=0, padx=10, pady=(0,33), sticky="ew")
         self.y_offset_entry = customtkinter.CTkEntry(self.range_frame, placeholder_text="", width=120, font=self.fonts)
         self.y_offset_entry.grid(row=7, column=1, padx=10, pady=(0,33), sticky="ew") 
         self.y_offset_entry.bind("<Return>", self.update_offset_event)
@@ -1445,13 +1448,53 @@ class App(customtkinter.CTk):
         self.y_lim_min_entry.insert(0, y_lim_min+y_offset-self.y_offset)
         self.y_lim_max_entry.insert(0, y_lim_max+y_offset-self.y_offset)
 
-        # スライダーのつまみを設定
-        self.x_slice_max_slider.configure(from_=self.x_min, to=self.x_max)
-        self.x_slice_min_slider.configure(from_=self.x_min, to=self.x_max)
-        self.x_slice_center_slider.configure(from_=self.x_min, to=self.x_max)
+        
+##
+        # Y slice (EDC)
+        self.y_slice_min_entry.delete(0, customtkinter.END)
+        self.y_slice_max_entry.delete(0, customtkinter.END)
+        self.y_slice_center_entry.delete(0, customtkinter.END)
+        self.y_slice_width_entry.delete(0, customtkinter.END)
+        self.background_intensity_edc_ydc_entry.delete(0, customtkinter.END)
+        self.y_slice_min_entry.insert(0, self.y_min)
+        self.y_slice_max_entry.insert(0, self.y_max)
+        self.y_slice_center_entry.insert(0, np.round((self.y_min+self.y_max)/2, ORDER_Y))
+        self.y_slice_width_entry.insert(0, np.round(abs(self.y_max-self.y_min), ORDER_Y))
+        # Sliderの初期化と更新
         self.y_slice_max_slider.configure(from_=self.y_min, to=self.y_max)
         self.y_slice_min_slider.configure(from_=self.y_min, to=self.y_max)
         self.y_slice_center_slider.configure(from_=self.y_min, to=self.y_max)
+        self.y_slice_width_slider.configure(from_=self.y_step, to=self.y_max-self.y_min)
+        self.y_slice_max_slider.set(self.y_max)
+        self.y_slice_min_slider.set(self.y_min)
+        self.y_slice_center_slider.set(np.round((self.y_min+self.y_max)/2, ORDER_Y))
+        self.y_slice_width_slider.set(np.round(abs(self.y_max-self.y_min), ORDER_Y))
+
+        # Energy slice (MDC)
+        self.x_slice_min_entry.delete(0, customtkinter.END)
+        self.x_slice_max_entry.delete(0, customtkinter.END)
+        self.x_slice_center_entry.delete(0, customtkinter.END)
+        self.x_slice_width_entry.delete(0, customtkinter.END)
+        self.x_slice_min_entry.insert(0, self.x_min)
+        self.x_slice_max_entry.insert(0, self.x_max)
+        self.x_slice_center_entry.insert(0, np.round((self.x_min+self.x_max)/2, ORDER_X))
+        self.x_slice_width_entry.insert(0, np.round(abs(self.x_max-self.x_min), ORDER_X))
+        # slider
+        self.x_slice_max_slider.configure(from_=self.x_min, to=self.x_max)
+        self.x_slice_min_slider.configure(from_=self.x_min, to=self.x_max)
+        self.x_slice_center_slider.configure(from_=self.x_min, to=self.x_max)
+        self.x_slice_width_slider.configure(from_=self.x_step, to=self.x_max-self.x_min)
+        self.x_slice_max_slider.set(self.x_max)
+        self.x_slice_min_slider.set(self.x_min)
+        self.x_slice_center_slider.set(np.round((self.x_min+self.x_max)/2, ORDER_X))
+        self.x_slice_width_slider.set(np.round(abs(self.x_max-self.x_min), ORDER_X))
+
+        # # EDCの範囲更新 X 
+        self.x_edc_max_entry.delete(0, customtkinter.END)
+        self.x_edc_min_entry.delete(0, customtkinter.END)
+        self.x_edc_max_entry.insert(0, self.x_max)
+        self.x_edc_min_entry.insert(0, self.x_min)
+##
 
 
         # エントリーボックスに従ってプロット領域を修正
@@ -1611,25 +1654,25 @@ class App(customtkinter.CTk):
         # EDC tab #################
         self.edc_slice_frame = self.edc_ydc_tabview.tab("Y Direction (EDC)")
         # self.edc_slice_frame.configure(fg_color='gray20', corner_radius=10)
-        # Maxmum Y
-        customtkinter.CTkLabel(self.edc_slice_frame, text="Max Y", width=120).grid(row=1, column=0, padx=(10,10), pady=(10,3), sticky="ew")
-        self.y_slice_max_entry = customtkinter.CTkEntry(self.edc_slice_frame, placeholder_text="", width=120, font=self.fonts)
-        self.y_slice_max_entry.grid(row=1, column=1, padx=(0,10), pady=(10,3), sticky="ew")
-        self.y_slice_max_entry.bind("<Return>",command=self.update_y_slice_min_or_max_event)
-        # slider
-        self.y_slice_max_slider = customtkinter.CTkSlider(self.edc_slice_frame, from_=0, to=100, command=self.update_y_slice_min_or_max_slider_event, width=120)
-        self.y_slice_max_slider.set(100)
-        self.y_slice_max_slider.grid(row=2, column=1, padx=(0,10), pady=(0,10), sticky="ew", columnspan=1)
-        
         # Min Y
-        customtkinter.CTkLabel(self.edc_slice_frame, text="Min Y", width=120).grid(row=3, column=0, padx=(10,10), pady=(0,3), sticky="ew")
+        customtkinter.CTkLabel(self.edc_slice_frame, text="Min Y", width=120).grid(row=1, column=0, padx=(10,10), pady=(10,3), sticky="ew")
         self.y_slice_min_entry = customtkinter.CTkEntry(self.edc_slice_frame, placeholder_text="", width=120, font=self.fonts)
-        self.y_slice_min_entry.grid(row=3, column=1, padx=(0,10), pady=(0,3), sticky="ew")
+        self.y_slice_min_entry.grid(row=1, column=1, padx=(0,10), pady=(10,3), sticky="ew")
         self.y_slice_min_entry.bind("<Return>",command=self.update_y_slice_min_or_max_event)
         # slider
         self.y_slice_min_slider = customtkinter.CTkSlider(self.edc_slice_frame, from_=0, to=100, command=self.update_y_slice_min_or_max_slider_event, width=120)
         self.y_slice_min_slider.set(0)
-        self.y_slice_min_slider.grid(row=4, column=1, padx=(0,10), pady=(0,10), sticky="ew", columnspan=1)
+        self.y_slice_min_slider.grid(row=2, column=1, padx=(0,10), pady=(0,10), sticky="ew", columnspan=1)
+
+        # Max Y
+        customtkinter.CTkLabel(self.edc_slice_frame, text="Max Y", width=120).grid(row=3, column=0, padx=(10,10), pady=(0,3), sticky="ew")
+        self.y_slice_max_entry = customtkinter.CTkEntry(self.edc_slice_frame, placeholder_text="", width=120, font=self.fonts)
+        self.y_slice_max_entry.grid(row=3, column=1, padx=(0,10), pady=(0,3), sticky="ew")
+        self.y_slice_max_entry.bind("<Return>",command=self.update_y_slice_min_or_max_event)
+        # slider
+        self.y_slice_max_slider = customtkinter.CTkSlider(self.edc_slice_frame, from_=0, to=100, command=self.update_y_slice_min_or_max_slider_event, width=120)
+        self.y_slice_max_slider.set(100)
+        self.y_slice_max_slider.grid(row=4, column=1, padx=(0,10), pady=(0,10), sticky="ew", columnspan=1)
         
         # Center Y
         customtkinter.CTkLabel(self.edc_slice_frame, text="Center Y", width=120).grid(row=5, column=0, padx=(10,10), pady=(0,3), sticky="ew")
@@ -1653,25 +1696,26 @@ class App(customtkinter.CTk):
 
         # YDC tab ##############
         self.ydc_slice_frame = self.edc_ydc_tabview.tab("E Direction (MDC)")
-        # Maxmum X
-        customtkinter.CTkLabel(self.ydc_slice_frame, text="Max Energy", width=75).grid(row=0, column=0, padx=(10,10), pady=(10,3), sticky="ew")
-        self.x_slice_max_entry = customtkinter.CTkEntry(self.ydc_slice_frame, placeholder_text="eV", width=120, font=self.fonts)
-        self.x_slice_max_entry.grid(row=0, column=1, padx=(0,10), pady=(10,3), sticky="ew")
-        self.x_slice_max_entry.bind("<Return>",command=self.update_x_slice_min_or_max_event)
-        # slider
-        self.x_slice_max_slider = customtkinter.CTkSlider(self.ydc_slice_frame, from_=0, to=15, command=self.update_x_slice_min_or_max_slider_event, width=120)
-        self.x_slice_max_slider.set(15)
-        self.x_slice_max_slider.grid(row=1, column=1, padx=(0,10), pady=(0,10), sticky="ew", columnspan=1)
 
         # Min
-        customtkinter.CTkLabel(self.ydc_slice_frame, text="Min Energy", width=120).grid(row=2, column=0, padx=(10,10), pady=(0,3), sticky="ew")
+        customtkinter.CTkLabel(self.ydc_slice_frame, text="Min Energy", width=120).grid(row=0, column=0, padx=(10,10), pady=(10,3), sticky="ew")
         self.x_slice_min_entry = customtkinter.CTkEntry(self.ydc_slice_frame, placeholder_text="eV", width=120, font=self.fonts)
-        self.x_slice_min_entry.grid(row=2, column=1, padx=(0,10), pady=(0,3), sticky="ew")
+        self.x_slice_min_entry.grid(row=0, column=1, padx=(0,10), pady=(10,3), sticky="ew")
         self.x_slice_min_entry.bind("<Return>",command=self.update_x_slice_min_or_max_event)
         # slider
         self.x_slice_min_slider = customtkinter.CTkSlider(self.ydc_slice_frame, from_=0, to=15, command=self.update_x_slice_min_or_max_slider_event, width=120)
         self.x_slice_min_slider.set(0)
-        self.x_slice_min_slider.grid(row=3, column=1, padx=(0,10), pady=(0,10), sticky="ew", columnspan=1)
+        self.x_slice_min_slider.grid(row=1, column=1, padx=(0,10), pady=(0,10), sticky="ew", columnspan=1)
+
+        # Maxmum X
+        customtkinter.CTkLabel(self.ydc_slice_frame, text="Max Energy", width=75).grid(row=2, column=0, padx=(10,10), pady=(0,3), sticky="ew")
+        self.x_slice_max_entry = customtkinter.CTkEntry(self.ydc_slice_frame, placeholder_text="eV", width=120, font=self.fonts)
+        self.x_slice_max_entry.grid(row=2, column=1, padx=(0,10), pady=(0,3), sticky="ew")
+        self.x_slice_max_entry.bind("<Return>",command=self.update_x_slice_min_or_max_event)
+        # slider
+        self.x_slice_max_slider = customtkinter.CTkSlider(self.ydc_slice_frame, from_=0, to=15, command=self.update_x_slice_min_or_max_slider_event, width=120)
+        self.x_slice_max_slider.set(15)
+        self.x_slice_max_slider.grid(row=3, column=1, padx=(0,10), pady=(0,10), sticky="ew", columnspan=1)
 
         # Center X
         customtkinter.CTkLabel(self.ydc_slice_frame, text="Center Energy", width=120).grid(row=4, column=0, padx=(10,10), pady=(0,3), sticky="ew")
@@ -1701,31 +1745,29 @@ class App(customtkinter.CTk):
         edc_label = customtkinter.CTkLabel(self.twod_image_slice_botton_frame, text="XY Range", font=self.fonts)
         edc_label.grid(row=0, column=0, padx=(10,5), pady=(10,10), sticky="ew", columnspan=2)
 
-        # Maxmum X
-        x_edc_max_label = customtkinter.CTkLabel(self.twod_image_slice_botton_frame, text="Max Energy", width=120)
-        x_edc_max_label.grid(row=1, column=0, padx=(10,10), pady=(0,5), sticky="ew")
-        self.x_edc_max_entry = customtkinter.CTkEntry(self.twod_image_slice_botton_frame, placeholder_text="eV", width=120, font=self.fonts)
-        self.x_edc_max_entry.grid(row=1, column=1, padx=(0,10), pady=(0,5), sticky="ew")
-        self.x_edc_max_entry.bind("<Return>",command=self.update_edc_x_range_event)
         # Min X
-        edc_label = customtkinter.CTkLabel(self.twod_image_slice_botton_frame, text="Min Energy", width=120)
-        edc_label.grid(row=2, column=0, padx=(10,10), pady=(0,5), sticky="ew")
+        customtkinter.CTkLabel(self.twod_image_slice_botton_frame, text="Min Energy", width=120).grid(row=1, column=0, padx=(10,10), pady=(0,5), sticky="ew")
         self.x_edc_min_entry = customtkinter.CTkEntry(self.twod_image_slice_botton_frame, placeholder_text="eV", width=120, font=self.fonts)
-        self.x_edc_min_entry.grid(row=2, column=1, padx=(0,10), pady=(0,5), sticky="ew")
+        self.x_edc_min_entry.grid(row=1, column=1, padx=(0,10), pady=(0,5), sticky="ew")
         self.x_edc_min_entry.bind("<Return>",command=self.update_edc_x_range_event)
 
-        # Maxmum Y
-        z_edc_max_label = customtkinter.CTkLabel(self.twod_image_slice_botton_frame, text="Max Intensity", width=120)
-        z_edc_max_label.grid(row=3, column=0, padx=(10,10), pady=(0,5), sticky="ew")
-        self.z_edc_max_entry = customtkinter.CTkEntry(self.twod_image_slice_botton_frame, placeholder_text="cps", width=120, font=self.fonts)
-        self.z_edc_max_entry.grid(row=3, column=1, padx=(0,10), pady=(0,5), sticky="ew")
-        self.z_edc_max_entry.bind("<Return>",command=self.update_edc_z_range_event)
+        # Maxmum X
+        customtkinter.CTkLabel(self.twod_image_slice_botton_frame, text="Max Energy", width=120).grid(row=2, column=0, padx=(10,10), pady=(0,5), sticky="ew")
+        self.x_edc_max_entry = customtkinter.CTkEntry(self.twod_image_slice_botton_frame, placeholder_text="eV", width=120, font=self.fonts)
+        self.x_edc_max_entry.grid(row=2, column=1, padx=(0,10), pady=(0,5), sticky="ew")
+        self.x_edc_max_entry.bind("<Return>",command=self.update_edc_x_range_event)
+
         # Min
-        edc_label = customtkinter.CTkLabel(self.twod_image_slice_botton_frame, text="Min Intensity", width=120)
-        edc_label.grid(row=4, column=0, padx=(10,10), pady=(0,5), sticky="ew")
+        customtkinter.CTkLabel(self.twod_image_slice_botton_frame, text="Min Intensity", width=120).grid(row=3, column=0, padx=(10,10), pady=(0,5), sticky="ew")
         self.z_edc_min_entry = customtkinter.CTkEntry(self.twod_image_slice_botton_frame, placeholder_text="cps", width=120, font=self.fonts)
-        self.z_edc_min_entry.grid(row=4, column=1, padx=(0,10), pady=(0,5), sticky="ew")
+        self.z_edc_min_entry.grid(row=3, column=1, padx=(0,10), pady=(0,5), sticky="ew")
         self.z_edc_min_entry.bind("<Return>",command=self.update_edc_z_range_event)
+
+        # Maxmum Y
+        customtkinter.CTkLabel(self.twod_image_slice_botton_frame, text="Max Intensity", width=120).grid(row=4, column=0, padx=(10,10), pady=(0,5), sticky="ew")
+        self.z_edc_max_entry = customtkinter.CTkEntry(self.twod_image_slice_botton_frame, placeholder_text="cps", width=120, font=self.fonts)
+        self.z_edc_max_entry.grid(row=4, column=1, padx=(0,10), pady=(0,5), sticky="ew")
+        self.z_edc_max_entry.bind("<Return>",command=self.update_edc_z_range_event)
 
         # full_range_button
         full_range_edc_button = customtkinter.CTkButton(self.twod_image_slice_botton_frame, command=self.autorange_button_edc_callback, text="Full Range", font=self.fonts, width=120)
@@ -2821,26 +2863,26 @@ class App(customtkinter.CTk):
         # title
         self.edcs_stack_range_label = customtkinter.CTkLabel(self.edcs_stack_range_frame, text='XY Range', font=self.fonts)
         self.edcs_stack_range_label.grid(row=0, column=0, padx=10, pady=10, sticky="ew", columnspan=2)
-        # 最大エネルギーラベル
-        customtkinter.CTkLabel(self.edcs_stack_range_frame, text='Max Energy', width=120).grid(row=1, column=0, padx=10, pady=(0,5), sticky="ew")
-        self.edcs_stack_x_lim_max_entry = customtkinter.CTkEntry(self.edcs_stack_range_frame, placeholder_text="eV", width=120, font=self.fonts)
-        self.edcs_stack_x_lim_max_entry.grid(row=1, column=1, padx=(0,10), pady=(0,5), sticky="ew")
-        self.edcs_stack_x_lim_max_entry.bind("<Return>", self.update_edcs_stack_range_event)   
         # 最小エネルギーラベル
-        customtkinter.CTkLabel(self.edcs_stack_range_frame, text='Min Energy', width=120).grid(row=2, column=0, padx=10, pady=(0,5), sticky="ew")
+        customtkinter.CTkLabel(self.edcs_stack_range_frame, text='Min Energy', width=120).grid(row=1, column=0, padx=10, pady=(0,5), sticky="ew")
         self.edcs_stack_x_lim_min_entry = customtkinter.CTkEntry(self.edcs_stack_range_frame, placeholder_text="eV", width=120, font=self.fonts)
-        self.edcs_stack_x_lim_min_entry.grid(row=2, column=1, padx=(0,10), pady=(0,5), sticky="ew")
+        self.edcs_stack_x_lim_min_entry.grid(row=1, column=1, padx=(0,10), pady=(0,5), sticky="ew")
         self.edcs_stack_x_lim_min_entry.bind("<Return>", self.update_edcs_stack_range_event)
-        # 最大yラベル
-        customtkinter.CTkLabel(self.edcs_stack_range_frame, text='Max Intensity', width=120).grid(row=3, column=0, padx=10, pady=(0,5), sticky="ew")
-        self.edcs_stack_y_lim_max_entry = customtkinter.CTkEntry(self.edcs_stack_range_frame, placeholder_text="cps", width=120, font=self.fonts)
-        self.edcs_stack_y_lim_max_entry.grid(row=3, column=1, padx=(0,10), pady=(0,5), sticky="ew")
-        self.edcs_stack_y_lim_max_entry.bind("<Return>", self.update_edcs_stack_range_event)   
+        # 最大エネルギーラベル
+        customtkinter.CTkLabel(self.edcs_stack_range_frame, text='Max Energy', width=120).grid(row=2, column=0, padx=10, pady=(0,5), sticky="ew")
+        self.edcs_stack_x_lim_max_entry = customtkinter.CTkEntry(self.edcs_stack_range_frame, placeholder_text="eV", width=120, font=self.fonts)
+        self.edcs_stack_x_lim_max_entry.grid(row=2, column=1, padx=(0,10), pady=(0,5), sticky="ew")
+        self.edcs_stack_x_lim_max_entry.bind("<Return>", self.update_edcs_stack_range_event)   
         # 最小yラベル
-        customtkinter.CTkLabel(self.edcs_stack_range_frame, text='Min Intensity', width=120).grid(row=4, column=0, padx=10, pady=(0,5), sticky="ew")
+        customtkinter.CTkLabel(self.edcs_stack_range_frame, text='Min Intensity', width=120).grid(row=3, column=0, padx=10, pady=(0,5), sticky="ew")
         self.edcs_stack_y_lim_min_entry = customtkinter.CTkEntry(self.edcs_stack_range_frame, placeholder_text="cps", width=120, font=self.fonts)
-        self.edcs_stack_y_lim_min_entry.grid(row=4, column=1, padx=(0,10), pady=(0,5), sticky="ew")
+        self.edcs_stack_y_lim_min_entry.grid(row=3, column=1, padx=(0,10), pady=(0,5), sticky="ew")
         self.edcs_stack_y_lim_min_entry.bind("<Return>", self.update_edcs_stack_range_event)
+        # 最大yラベル
+        customtkinter.CTkLabel(self.edcs_stack_range_frame, text='Max Intensity', width=120).grid(row=4, column=0, padx=10, pady=(0,5), sticky="ew")
+        self.edcs_stack_y_lim_max_entry = customtkinter.CTkEntry(self.edcs_stack_range_frame, placeholder_text="cps", width=120, font=self.fonts)
+        self.edcs_stack_y_lim_max_entry.grid(row=4, column=1, padx=(0,10), pady=(0,5), sticky="ew")
+        self.edcs_stack_y_lim_max_entry.bind("<Return>", self.update_edcs_stack_range_event)   
         
         # Full Range
         edcs_stack_fullrange_button = customtkinter.CTkButton(self.edcs_stack_range_frame, text="Full Range", command=self.edcs_stack_autorange_button_callback, width=120, font=self.fonts)

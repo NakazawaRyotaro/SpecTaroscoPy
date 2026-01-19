@@ -266,29 +266,27 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
             self.choice_curvature_method_combo_callback(0)
 
         # DetectPeak
-        label = customtkinter.CTkLabel(master=self, text="Detect Peaks")
-        label.grid(row=91, column=0, padx=10, pady=(0,5), sticky="ew")
+        customtkinter.CTkLabel(master=self, text="Detect Peaks").grid(row=91, column=0, padx=10, pady=(0,5), sticky="ew")
         detect_peak_checkbox_value = customtkinter.BooleanVar() # チェックボックスの変数を作成し、初期値をTrueに設定
         detect_peak_checkbox_value.set(True)
         self.detect_peak_checkbox = customtkinter.CTkCheckBox(master=self, text="", variable=detect_peak_checkbox_value, width=20)
         self.detect_peak_checkbox.grid(row=91, column=1, padx=(0,0), pady=(0,5), sticky="ew")
 
         # EDC(s)のときのY offset value
-        y_offset_label = customtkinter.CTkLabel(master=self, text="Order")
-        y_offset_label.grid(row=92, column=0, padx=10, pady=(0,5), sticky="ew")
-        self.order_entry = customtkinter.CTkEntry(master=self, placeholder_text="ピーク検出感度 (正数)", width=120, font=self.fonts) # 入力
+        customtkinter.CTkLabel(master=self, text="Sensitivity\n(Smaller is more sensitive.)").grid(row=92, column=0, padx=10, pady=(0,5), sticky="ew")
+        self.order_entry = customtkinter.CTkEntry(master=self, placeholder_text="ピーク検出感度 (正数で小さいほうが高感度)", width=120, font=self.fonts) # 入力
         self.order_entry.grid(row=92, column=1, padx=(0,10), pady=(0,5), sticky="ew")
-        self.order_entry.insert(0, 35)
+        self.order_entry.insert(0, 1)
 
-        x_max_label = customtkinter.CTkLabel(master=self, text="Max X")
-        x_max_label.grid(row=93, column=0, padx=10, pady=(0,5), sticky="ew")
-        self.x_max_entry = customtkinter.CTkEntry(master=self, placeholder_text="最大エネルギー (eV)", width=120, font=self.fonts) # 入力
-        self.x_max_entry.grid(row=93, column=1, padx=(0,10), pady=(0,5), sticky="ew")
-
-        x_min_label = customtkinter.CTkLabel(master=self, text="Min X")
-        x_min_label.grid(row=94, column=0, padx=10, pady=(0,5), sticky="ew")
+        # X範囲指定
+        customtkinter.CTkLabel(master=self, text="Min X").grid(row=93, column=0, padx=10, pady=(0,5), sticky="ew")
         self.x_min_entry = customtkinter.CTkEntry(master=self, placeholder_text="最小エネルギー (eV)", width=120, font=self.fonts) # 入力
-        self.x_min_entry.grid(row=94, column=1, padx=(0,10), pady=(0,5), sticky="ew") 
+        self.x_min_entry.grid(row=93, column=1, padx=(0,10), pady=(0,5), sticky="ew") 
+
+        # X範囲指定
+        customtkinter.CTkLabel(master=self, text="Max X").grid(row=94, column=0, padx=10, pady=(0,5), sticky="ew")
+        self.x_max_entry = customtkinter.CTkEntry(master=self, placeholder_text="最大エネルギー (eV)", width=120, font=self.fonts) # 入力
+        self.x_max_entry.grid(row=94, column=1, padx=(0,10), pady=(0,5), sticky="ew")
 
         # do it ボタン作成
         do_it_button = customtkinter.CTkButton(master=self, command=self.do_it_button_callback, text="Do It", font=self.fonts)
@@ -453,14 +451,13 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
         print("スムージング完了。")
     
         # 二次微分結果をplot
-        title=f'Filename: {self.image[0].filename}'
+        title=f'Input Filename: {self.image[0].filename}'
         if self.smoothing_method=='Savitzky-Golay' and self.has_curvature_frame==False:
-            title=f'Filename: {self.image[0].filename}\nSG params: Oder {int(self.smoothing_param_values[0])}, {int(self.smoothing_param_values[1])} point(s), {int(self.smoothing_param_values[2])} iteration(s)'
+            title=f'Input Filename: {self.image[0].filename}\nSG params: Order {int(self.smoothing_param_values[0])}, {int(self.smoothing_param_values[1])} point(s), {int(self.smoothing_param_values[2])} iteration(s)'
         elif self.smoothing_method=='Binomial' and self.has_curvature_frame==False:
-            title=f'Filename: {self.image[0].filename}\nSG params: Oder {int(self.smoothing_param_values[0])}, {int(self.smoothing_param_values[1])} iteration(s)'
-
+            title=f'Input Filename: {self.image[0].filename}\nSG params: Order {int(self.smoothing_param_values[0])}, {int(self.smoothing_param_values[1])} iteration(s)'
         # スムージング結果をplot
-        if self.import_mode[0]=="Image (MBS; A-1)/General text":
+        if self.import_mode[0]=="Image (MBS, A-1)/General text":
             self.smoothed_image_pltctrl=ImagePlotControl(self.image[0].y, self.x, self.z_smoothed.T, 
                                                 title=f'[Smoothing]\n{title}',
                                                 plt_interaction=True, figsize_h=3.5, figsize_w=4,
@@ -476,7 +473,7 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
             # インスタンスを管理するリスト
             self.fig_instance_lst.append(self.smoothed_image_pltctrl)
 
-        if self.import_mode[0]=="Spectrum (MBS; A-1)/General text":
+        if self.import_mode[0]=="Spectra (MBS, A-1)/General text":
             self.smoothed_edcs_pltctrl = PlotControl(title=f'[Smoothing]\n{title}', plt_interaction=True, initialize_figs=False, figsize_w=3.5, figsize_h=5.5, fontsize=10,
                                             x_label=self.image[0].x_label, y_label="Intensity (cps)")
             # figureの画面上の位置を制御
@@ -593,8 +590,8 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
             (x, y) を渡したら show_figure_at_position(x,y) を呼ぶ
         """
 
-        # --- Image (MBS; A-1)/General text ---
-        if self.import_mode[0] == "Image (MBS; A-1)/General text":
+        # --- Image (MBS, A-1)/General text ---
+        if self.import_mode[0] == "Image (MBS, A-1)/General text":
             pltctrl = ImagePlotControl(
                 self.image[0].y, self.x, z_result.T,
                 colormap=COLORMAP_SECOND_DERIVATIVE,
@@ -652,7 +649,7 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
                     self.peak_energy_lst[i],
                     [p + y_off[i] for p in self.ddy_peak_intensity_lst[i]],
                     label="", linewidth=1.5, scatter=True,
-                    color="None", edgecolor="black", linestyle="|", s=15, alpha=1
+                    color="none", edgecolor="tab:orange", linestyle="|", s=25, alpha=1
                 )
 
                 # 元スペクトル上のピーク
@@ -660,7 +657,7 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
                     self.peak_energy_lst[i],
                     np.array(self.edcs_peak_intensity_lst[i]) + self.y_edc_offset[i],
                     label="", linewidth=1.5, scatter=True,
-                    color="None", edgecolor="black", linestyle="|", s=15, alpha=1
+                    color="none", edgecolor="tab:orange", linestyle="|", s=25, alpha=1
                 )
             
 
@@ -678,8 +675,8 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
             self.fig_instance_lst.append(edc_stack_ctrl)
 
         # band dispersion plot (E vs k//)
-        # --- Spectrum (MBS; A-1)/General text ---
-        if self.import_mode[0] == "Spectrum (MBS; A-1)/General text":
+        # --- Spectra (MBS, A-1)/General text ---
+        if self.import_mode[0] == "Spectra (MBS, A-1)/General text":
             if self.detect_peak_checkbox.get():
                 # peak 波数プロット
                 self.band_dispersion_pltctrl = PlotControl(title=f'[Peak plot]\n{title}', plt_interaction=True, initialize_figs=False, figsize_w=3, figsize_h=3.5, fontsize=10,
@@ -689,7 +686,7 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
                 for i in range(len(self.peak_energy_lst)):
                     for j in range(len(self.peak_energy_lst[i])):
                         self.band_dispersion_pltctrl.add_spectrum(self.image[0].y_slice_center_edcs[i], self.peak_energy_lst[i][j], 
-                                                                label=None, color='tab:blue')
+                                                                label=None, color='tab:orange')
                 
             if self.image[0].x_label=="Binding Energy (eV)":
                 self.band_dispersion_pltctrl.ax.invert_yaxis()
@@ -745,13 +742,13 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
         title = f'Peak Plot: {self.image[0].filename}'
         if self.smoothing_method == 'Savitzky-Golay' and self.has_curvature_frame == False:
             title = (
-                f'Filename: {self.image[0].filename}\n'
-                f'SG params: Oder {int(self.smoothing_param_values[0])}, {int(self.smoothing_param_values[1])} point(s), {int(self.smoothing_param_values[2])} iteration(s)'
+                f'Input Filename: {self.image[0].filename}\n'
+                f'SG params: Order {int(self.smoothing_param_values[0])}, {int(self.smoothing_param_values[1])} point(s), {int(self.smoothing_param_values[2])} iteration(s)'
             )
         elif self.smoothing_method == 'Binomial' and self.has_curvature_frame == False:
             title = (
-                f'Filename: {self.image[0].filename}\n'
-                f'Binomial params: Oder {int(self.smoothing_param_values[0])}, {int(self.smoothing_param_values[1])} iteration(s)'
+                f'Input Filename: {self.image[0].filename}\n'
+                f'Binomial params: Order {int(self.smoothing_param_values[0])}, {int(self.smoothing_param_values[1])} iteration(s)'
             )
 
         self._plot_analysis_result_common(self.z_second_derivative, title)
@@ -784,14 +781,14 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
             z = [sublist[idx_min:idx_max] for sublist in z] # 二次微分やcurvature
             
             another_z = [sublist[idx_min:idx_max] for sublist in self.image[0].z]
+        
         else:
             x = self.x
             another_z = self.image[0].z
 
-        # print(another_z)
-        # peak detect
+
         self.order_detect_peak=self.order_entry.get()
-        self.peak_energy_lst, self.ddy_peak_intensity_lst, self.edcs_peak_intensity_lst = self.image[0].detect_peaks_in_nested_list(x, z, order=self.order_detect_peak, another_list=another_z)
+        self.peak_energy_lst, self.ddy_peak_intensity_lst, self.edcs_peak_intensity_lst = self.image[0].detect_peaks_in_nested_list(x, z, order=self.order_detect_peak, z2_lst=another_z)
         
 
     def save_button_callback(self):
@@ -806,12 +803,14 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
             
             # filepath 作成
             savefile_path = os.path.join(directory_path, foldername, self.savefile_entry.get())
-            # 二次微分解析ファイル作成
-            self.save_data(savefile_path, mode='2der', save_peaks=False)
+
+            # 二次微分スペクトル ファイル作成
+            self.save_data(savefile_path, self.savefile_entry.get(), mode='2der', save_peaks=False)
+
             # peak detect file 作成
             if self.detect_peak_checkbox.get():
-                if self.import_mode[0]!="Image (MBS; A-1)/General text":
-                    self.save_data(savefile_path, mode='2der', save_peaks=True)
+                if self.import_mode[0]!="Image (MBS, A-1)/General text":
+                    self.save_data(savefile_path, self.savefile_entry.get(), mode='2der', save_peaks=True)
 
         # 曲率解析のときの処理
         elif self.has_curvature_frame and self.curvature_method=="1D (Energy)":
@@ -819,28 +818,30 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
             foldername=foldername.replace('.','_')
             rpa.create_folder_at_current_path(self.image[0].path, foldername) # フォルダ作成
             savefile_path = os.path.join(directory_path, foldername, self.savefile_entry.get()) # セーブファイルのパス作成
-            self.save_data(savefile_path, mode='curX')
+            self.save_data(savefile_path, self.savefile_entry.get(), mode='curX')
             # peak detect file 作成
             if self.detect_peak_checkbox.get():
-                if self.import_mode[0]!="Image (MBS; A-1)/General text":
-                    self.save_data(savefile_path, mode='curX', save_peaks=True)
+                if self.import_mode[0]!="Image (MBS, A-1)/General text":
+                    self.save_data(savefile_path, self.savefile_entry.get(), mode='curX', save_peaks=True)
 
         elif self.has_curvature_frame and self.curvature_method=="2D":
             foldername=f"STPy_2DCurvature" 
             foldername=foldername.replace('.','_')
             rpa.create_folder_at_current_path(self.image[0].path, foldername)
             savefile_path = os.path.join(directory_path, foldername, self.savefile_entry.get())
-            self.save_data(savefile_path, mode='curXY')
+            self.save_data(savefile_path, self.savefile_entry.get(), mode='curXY')
             # peak detect file 作成
             if self.detect_peak_checkbox.get():
-                if self.import_mode[0]!="Image (MBS; A-1)/General text":
+                if self.import_mode[0]!="Image (MBS, A-1)/General text":
                     savefile_path = savefile_path.replace(".txt", "Peak.txt")
-                    self.save_data(savefile_path, mode='curXY', save_peaks=True)
+                    self.save_data(savefile_path, self.savefile_entry.get(), mode='curXY', save_peaks=True)
 
 
-    def save_data(self, savefile_path, mode, save_peaks=False):
+    def save_data(self, savefile_path, base_legendname, mode, save_peaks=False):
         # txt fileの中身
-        def save(savefile_path):
+        filename=base_legendname.replace(".txt","")
+
+        def save(savefile_path, filename=filename):
             # DATA: 以降の行を取得
             data_index = self.image[0].l.index('DATA:') + 1
             # print(data_index)
@@ -904,7 +905,6 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
             # データ追加
             # peak detect dataのsave
             if save_peaks:
-                filename=self.image[0].filename.replace('.txt', '')
                 data.append(f'yc_{filename}_Peak\tx_{filename}_Peak\t{filename}_Peak\t{filename}_PeakOffset')
                 for i in range(len(self.peak_energy_lst)):
                     for j in range(len(self.peak_energy_lst[i])):

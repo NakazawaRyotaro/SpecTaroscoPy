@@ -158,7 +158,7 @@ class MBS_A1:
             data = np.array(data_).T # dataの行列を転置する。
 
             # 解析済みデータを読み込む場合。
-            if "[SpecTaroscoPy — PES image]" in self.l:
+            if "[SpecTaroscoPy — PES image]" in self.l or "[Spectrum Analyzer]" in self.l or "[STPy - PES image]" in self.l:
                 z_ = self._handle_spectrum_analyzer_output(data)
             else:
                 z_ = self._normalize_raw_z_data(data)
@@ -332,7 +332,7 @@ class MBS_A1:
 
     def _extract_measurement_conditions_from_spectaro_data(self):
         r = rpa.get_words_next_to_search_term
-        if "[SpecTaroscoPy — PES image]" in self.l or "[Spectrum Analyzer]" in self.l:
+        if "[SpecTaroscoPy — PES image]" in self.l or "[Spectrum Analyzer]" in self.l or "[STPy - PES image]" in self.l:
             self.y_label, _ = r(self.l, "Y Label", type="str", words_for_failure=self.y_label)
             self.x_label, _ = r(self.l, "X Label", type="str", words_for_failure=self.x_label)
             self.y_min, _ = r(self.l, "Y Min")
@@ -383,7 +383,7 @@ class MBS_A1:
         self.x_label, _ = r(self.l, "X Label", type="str")
 
         if self.x_label == "Binding Energy (eV)":
-            # if '--- EDC ---' in self.l or '--- EDCs Stacking ---' in self.l or '[EDCs Stacking]' in self.l or '[EDC]' in self.l:
+            # if '--- EDC ---' in self.l or '--- EDCs Stacking ---' in self.l and '[EDCs Stacking]' in self.l and '[EDC]' in self.l:
             #     self.x = copy.deepcopy(z_[0])
             #     self.EF = copy.deepcopy(z_[1])
             #     z_ = copy.deepcopy(z_[2:])
@@ -413,7 +413,7 @@ class MBS_A1:
             self.x_step=np.round(abs(self.x[1]-self.x[0]), ORDER_X)
         # print(self.actscan, self.frame)
         z_ = copy.deepcopy(z_[1:]) / self.frame 
-        self.z_paths.append(z_/ self.actscan)  # EDC viewer用にact scanで割る
+        self.z_paths.append(z_ / self.actscan)  # EDC viewer用にact scanで割る
         return z_
 
     def _append_data(self, z_):
@@ -433,9 +433,11 @@ class MBS_A1:
                     print("積算失敗：データ点数が一致していません")
 
     def _finalize_z_image(self):
-        if "[SpecTaroscoPy — PES image]" not in self.l:
+        if "[SpecTaroscoPy – PES image]" not in self.l and "[Spectrum Analyzer]" not in self.l and "[STPy - PES image]" not in self.l:
+            print("aaaaa")
             if self.z_sekisan_flag:
                 self.z /= self.totalactscan
+                
             else: # 積算できないときは最後に読み込んだデータを表示させる
                 self.z = self.z_paths[-1]
                 # self.z /= len(self.path_lst)
@@ -735,7 +737,7 @@ class MBS_A1:
             # 追加するヘッダー
             added_header=[]
             added_header.append('')  # 空行
-            added_header.append("[SpecTaroscoPy – PES image]")
+            added_header.append("[STPy - PES image]")
             added_header.append("Author\tR Nakazawa")
             added_header.append("Contact\tnakazawa@ims.ac.jp")
             added_header.append(f"Version\t{VERSION_NUMBER}")
@@ -1015,46 +1017,47 @@ class MBS_A1:
         return curvature
     
 
-    def detect_peaks_in_nested_list(self, x, y_lst, order=5, negative_peak=True, another_list=None):
+    def detect_peaks_in_nested_list(self, x, z_lst, order=5, negative_peak=True, z2_lst=None):
         """
         入れ子リスト内の各データ（y）に対して局所的な最大値（ピーク）を検出する。
 
         Parameters:
-            y_lst (list of list): 入れ子のデータリスト。
+            x (list): x軸のデータリスト。
+            z_lst (list of list): 入れ子のデータリスト。二次微分解析のとき、二次微分スペクトルのリストを渡す。
             order (int): ピークを検出する際の局所的比較範囲。
             negative_peak (bool): 負ピークを検出するか、正ピークを検出するか。
-            another_list (list of list): 入れ子の別のデータリスト。
+            z2_lst (list of list): 入れ子の別のデータリスト。二次微分解析のときz_imageを渡す。
         Returns:
-            peak_x_list (list of list): 各スペクトルの局所的な最大値のインデックスを格納したリスト。
-            peak_z_list (list of list): 各スペクトルの局所的な最大値の強度を格納したリスト。
-            peak_another_z_list (list of list): peak_x_listに対応する別リストの強度を格納したリスト。
+            peak_x_lst (list of list): 各スペクトルの局所的な最大値のインデックスを格納したリスト。
+            peak_z_lst (list of list): 各スペクトルの局所的な最大値の強度を格納したリスト。
+            peak_z2_lst (list of list): peak_x_listに対応する別リストの強度を格納したリスト。
         """
         order = int(order)
         peak_x_list = []
         peak_z_list = []
-        peak_another_z_list = []
+        peak_z2_list = []
 
-        for i in range(len(y_lst)):
+        for i in range(len(z_lst)):
             # 局所的な最大(小)値のインデックスを取得
             if not negative_peak:
-                peak_indices = argrelmax(y_lst[i], order=order)[0]
+                peak_indices = argrelmax(z_lst[i], order=order)[0]
             else:
-                peak_indices = argrelmin(y_lst[i], order=order)[0]
+                peak_indices = argrelmin(z_lst[i], order=order)[0]
 
             # 最大値の強度（値）を取得
             peak_x = list(x[peak_indices])  # リスト化
-            peak_z = list(y_lst[i][peak_indices])  # リスト化
+            peak_z = list(z_lst[i][peak_indices])  # リスト化
             
             # 結果をリストに格納
             peak_x_list.append(peak_x)
             peak_z_list.append(peak_z)
             
             # 他のリストで対応する強度をピックアップ
-            if another_list is not None:
-                peak_another_z = list(another_list[i][peak_indices])  # リスト化
-                peak_another_z_list.append(peak_another_z)
+            if z2_lst is not None:
+                peak_z2 = list(z2_lst[i][peak_indices])  # リスト化
+                peak_z2_list.append(peak_z2)
 
-        return peak_x_list, peak_z_list, peak_another_z_list
+        return peak_x_list, peak_z_list, peak_z2_list
 
 
 

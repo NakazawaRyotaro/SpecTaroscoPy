@@ -389,8 +389,8 @@ class LoadImageDataFrame(customtkinter.CTkFrame):
         load_file_button.grid(row=1, column=0, padx=(10,10), pady=(0,5), sticky="w")
 
         self.file_type_combo = customtkinter.CTkComboBox(self, font=self.fonts, command=None, 
-                                                    values=["Image (MBS; A-1)/General text",
-                                                            "Spectra (MBS; A-1)/General text",  
+                                                    values=["Image (MBS, A-1)/General text",
+                                                            "Spectra (MBS, A-1)/General text",  
                                                             ])
         self.file_type_combo.grid(row=1, column=1, padx=(0, 10), pady=(0,5), sticky="ew")
 
@@ -416,7 +416,7 @@ class LoadImageDataFrame(customtkinter.CTkFrame):
         self.import_mode.append(self.file_type_combo.get())
         
         # photoemission intensity map インスタンス生成
-        if self.import_mode[0]=="Spectrum (MBS; A-1)/General text" or self.file_type_combo.get()=="Image (MBS; A-1)/General text":
+        if self.import_mode[0]=="Spectra (MBS, A-1)/General text" or self.file_type_combo.get()=="Image (MBS, A-1)/General text":
             self.image.clear()
             self.image.append(MBS_A1(idir=IDIR)) # imageに格納して、以下image[0]でインスタンスを指定する。
             if self.image[0].x_label=="Binding Energy (eV)":
@@ -447,7 +447,7 @@ class LoadImageDataFrame(customtkinter.CTkFrame):
         self.file_label.grid(row=2, column=1, padx=(0,10), pady=(0,5), sticky="ew", columnspan=2)            
 
 
-        if self.import_mode[0]=="Spectrum (MBS; A-1)/General text":
+        if self.import_mode[0]=="Spectra (MBS, A-1)/General text":
             # インスタンス作製
             self.edcs_pltctrl = PlotControl(title=f"Imported EDC(s):\n{self.image[0].filename}", 
                                             plt_interaction=True, initialize_figs=False, figsize_w=4, figsize_h=3.5, fontsize=10,
@@ -466,7 +466,7 @@ class LoadImageDataFrame(customtkinter.CTkFrame):
             self.edcs_pltctrl.update_canvas()
             self.fig_instance_lst.append(self.edcs_pltctrl)
 
-        elif self.import_mode[0]=="Image (MBS; A-1)/General text":
+        elif self.import_mode[0]=="Image (MBS, A-1)/General text":
             # インスタンス作製
             self.image_pltctrl = ImagePlotControl(self.y, self.x, self.image[0].z.T, 
                                                   title=f"Imported Image:\n{self.image[0].filename}", plt_interaction=True, figsize_h=3.5, figsize_w=4,
