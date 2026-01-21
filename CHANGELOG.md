@@ -12,3 +12,4 @@
 |2025/12/19|6.5.0|ARPES image解析でDA30のtext fileを読み込めるようにした。|
 |2025/12/19|6.5.2|ARPES image/二次微分解析のバグ修正。|
 |2026/01/15|6.6.0|二次微分のパラメータ依存解析プログラムをsrc/analysis/SecondDerivative_ParameterDependence.pyとして追加。GUIは未作成。|
+|2026/01/21|6.7.0|ARPES imageでIgorProから出力したテキストデータを読み込めるようにした。IgorProでDeflectorMap解析したimageをSpecTaroで解析できる。|
