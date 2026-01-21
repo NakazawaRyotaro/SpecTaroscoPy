@@ -30,6 +30,7 @@ sys.path.append(str(SRC_PATH))                         # str()で文字列に変
 from RyoPy import defs_for_analysis as rpa
 from RyoPy.MBS_A1 import MBS_A1
 from RyoPy.SCIENTA_DA30 import SCIENTA_DA30
+from RyoPy.IgorPro_Image import IgorPro_Image
 from RyoPy.PlotControl import ImagePlotControl, PlotControl
 from RyoPy.Spectrum import Spectrum
 from setting.setting import App as SettingApp
@@ -96,6 +97,7 @@ class App(customtkinter.CTk):
         # 解析で出てきた変数の初期化
         self.x_label='X'
         self.y_label='Y'    
+        self.z_label='Z'
         self.x=None
         self.x_min=None
         self.x_max=None
@@ -296,7 +298,8 @@ class App(customtkinter.CTk):
                                                             "Scienta DA30 (IMS)",
                                                             "MBS A-1 (G1, BL7U, UVSOR)", 
                                                             "MBS A-1 (G2, BL7U, UVSOR)", 
-                                                            "MBS A-1 (G3, BL7U, UVSOR)"
+                                                            "MBS A-1 (G3, BL7U, UVSOR)",
+                                                            "IgorPro Image"
                                                             ])
         self.equipment_combo.grid(row=0, column=2, padx=(0, 9), pady=(10,5), sticky="ew", columnspan=1)
         # パスを表示
@@ -337,10 +340,10 @@ class App(customtkinter.CTk):
             self.peim=MBS_A1(idir=IDIR)
         elif self.equipment_combo.get() == "MBS A-1 (G3, BL7U, UVSOR)":
             self.peim=MBS_A1(idir=IDIR)
-        
         elif self.equipment_combo.get() == "Scienta DA30 (IMS)":
             self.peim=SCIENTA_DA30(idir=IDIR)
-
+        elif self.equipment_combo.get() == "IgorPro Image":
+            self.peim=IgorPro_Image(idir=IDIR)
 
 
         if self.peim.z is None: # 平均化処理できなかった場合は、最後に読み込んだfileを解析する
@@ -380,6 +383,8 @@ class App(customtkinter.CTk):
             self.x_label=self.peim.x_label
         if self.peim.y_label is not None:
             self.y_label=self.peim.y_label
+        if self.peim.z_label is not None:
+            self.z_label=self.peim.z_label
 
         self.y_min=self.peim.y_min
         self.y_max=self.peim.y_max
@@ -530,7 +535,7 @@ class App(customtkinter.CTk):
         self.edc_pltctrl.update_canvas()
 
         # Stack EDCsは初期化する。
-        self.edcs_stack_pltctrl=PlotControl(title="EDCs will be shown here.", x_label=self.x_label, y_label='Intensity (cps)', figsize_w=EDCS_WIDTH, figsize_h=EDCS_HEIGHT, fontsize=12)
+        self.edcs_stack_pltctrl=PlotControl(title="EDCs will be shown here.", x_label=self.x_label, y_label=self.z_label, figsize_w=EDCS_WIDTH, figsize_h=EDCS_HEIGHT, fontsize=12)
         self.edcs_stack_pltctrl.add_spectrum(0, 0, "EDCs", color="white")
         self.edcs_stack_pltctrl.change_legend_position(mode="best")
         self.edcs_stack_canvas = FigureCanvasTkAgg(self.edcs_stack_pltctrl.fig, master=self.image_plot_frame)
@@ -1047,6 +1052,8 @@ class App(customtkinter.CTk):
         self.x_min=np.amin(self.x_offseted)
         self.x_max=np.amax(self.x_offseted)
         
+        self.x_label=self.peim.x_label
+
         # plot用 y軸更新
         if self.switch_value_angkhconversion.get()==True and self.peim.y_label==r"$k_{\parallel} \ \mathrm{(\AA^{-1})}$":
             self.y=copy.deepcopy(self.peim.kh)
@@ -1159,7 +1166,7 @@ class App(customtkinter.CTk):
         # EDCs stacking 初期化
         if hasattr(self, 'edcs_pltctrl') and self.edcs_pltctrl is not None:
             plt.close(self.edcs_pltctrl.fig)
-        self.edcs_stack_pltctrl=PlotControl(title=f"{self.filename_edcs_entry.get()}", x_label=self.peim.x_label, y_label="Intensity (cps)", figsize_w=EDCS_WIDTH, figsize_h=EDCS_HEIGHT, fontsize=12, plt_interaction=False)
+        self.edcs_stack_pltctrl=PlotControl(title=f"{self.filename_edcs_entry.get()}", x_label=self.peim.x_label, y_label=self.peim.z_label, figsize_w=EDCS_WIDTH, figsize_h=EDCS_HEIGHT, fontsize=12, plt_interaction=False)
         if self.edcs_ystep_entry.get()!='' and self.edcs_z_offset_entry.get()!='':
             ystep_number_old=int( float(self.edcs_ystep_entry.get()) / abs(self.peim.y[0]-self.peim.y[1]) )
             ystep_new=float( abs(self.y[0]-self.y[1])*ystep_number_old )
@@ -1206,7 +1213,7 @@ class App(customtkinter.CTk):
         self.peim_pltctrl = ImagePlotControl(x, y, z,
                                             title="An image will be shown here.\n", 
                                             colormap=self.colormap, 
-                                            x_label=self.x_label, y_label=self.y_label, z_label="Intensity (cps)", 
+                                            x_label=self.x_label, y_label=self.y_label, z_label=self.z_label, 
                                             figsize_w=IMAGE_WIDTH, figsize_h=IMAGE_HEIGHT, 
                                             scientific_zscale=True)
         
@@ -1631,7 +1638,7 @@ class App(customtkinter.CTk):
     # 2D image Slicer (Y) ###############################################
     def generate_edc_plot_frame(self):
         # EDC plot
-        self.edc_pltctrl=PlotControl(title="An EDC/MDC will be shown here.", x_label=self.x_label, y_label='Intensity (cps)', figsize_w=IMAGE_WIDTH, figsize_h=IMAGE_HEIGHT*1.25, fontsize=12)
+        self.edc_pltctrl=PlotControl(title="An EDC/MDC will be shown here.", x_label=self.x_label, y_label=self.z_label, figsize_w=IMAGE_WIDTH, figsize_h=IMAGE_HEIGHT*1.25, fontsize=12)
         self.edc_pltctrl.add_spectrum(0, 0, "EDC/MDC", color="white")
         self.edc_pltctrl.change_legend_position(mode="best", fontsize="small")
         self.edc_canvas = FigureCanvasTkAgg(self.edc_pltctrl.fig, master=self.image_plot_frame)
@@ -1977,8 +1984,8 @@ class App(customtkinter.CTk):
                                         label=self.peim.filename_lst[i], 
                                         scatter=False, alpha=1, linewidth=1,
                                         new_title=f"{self.filename_edc_entry.get()}\n",
-                                        new_x_label=self.peim.x_label, 
-                                        new_y_label="Intensity (cps)")
+                                        new_x_label=self.x_label, 
+                                        new_y_label=self.z_label)
 
         if self.peim.z_sekisan_flag:
             self.edc_pltctrl.add_spectrum(self.x_offseted, self.z_edc_offseted, 
@@ -2151,7 +2158,7 @@ class App(customtkinter.CTk):
 
         # YDC
         self.edc_pltctrl.add_spectrum(y, self.peim.z_ydc, label=label, new_title=f"YDC: {self.peim.filename}\n",
-                                    new_x_label=self.peim.y_label, new_y_label="Intensity (cps)",color=SPECTRAL_COLOR, 
+                                    new_x_label=self.peim.y_label, new_y_label=self.z_label, color=SPECTRAL_COLOR, 
                                     scatter=False, linewidth=1.5)
 
         # imageにEDCを切り出したlineを追加 (XY軸 swapしているかどうかで条件分岐)
@@ -2830,7 +2837,7 @@ class App(customtkinter.CTk):
 #################################################################################################
     def generate_edcs_stack_frame(self):
         # EDCs stack plot
-        self.edcs_stack_pltctrl=PlotControl(title="EDCs will be shown here.", x_label=self.x_label, y_label="Intensity (cps)", figsize_w=EDCS_WIDTH, figsize_h=EDCS_HEIGHT, fontsize=12)
+        self.edcs_stack_pltctrl=PlotControl(title="EDCs will be shown here.", x_label=self.x_label, y_label=self.z_label, figsize_w=EDCS_WIDTH, figsize_h=EDCS_HEIGHT, fontsize=12)
         self.edcs_stack_pltctrl.add_spectrum(0, 0, "EDCs", color="white")
         self.edcs_stack_pltctrl.change_legend_position(mode="best", fontsize="small")
         self.edcs_stack_canvas = FigureCanvasTkAgg(self.edcs_stack_pltctrl.fig, master=self.image_plot_frame)
@@ -2937,7 +2944,7 @@ class App(customtkinter.CTk):
         #     self.filename_edcs_entry.insert(0, f"{self.peim.filename.replace('.txt', '_EDCs_VL.txt')}")
 
         # plot ##########################################
-        self.edcs_stack_pltctrl=PlotControl(title=f"{self.filename_edcs_entry.get()}\nY Step: {self.peim.y_step_edcs} {c_label}", x_label=self.peim.x_label, y_label="Intensity (cps)", figsize_w=EDCS_WIDTH, figsize_h=EDCS_HEIGHT, fontsize=12, plt_interaction=False)
+        self.edcs_stack_pltctrl=PlotControl(title=f"{self.filename_edcs_entry.get()}\nY Step: {self.peim.y_step_edcs} {c_label}", x_label=self.peim.x_label, y_label=self.peim.z_label, figsize_w=EDCS_WIDTH, figsize_h=EDCS_HEIGHT, fontsize=12, plt_interaction=False)
 
         res = None  
         for i in range(len(self.peim.z_edcs)):

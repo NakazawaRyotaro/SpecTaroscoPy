@@ -434,7 +434,7 @@ class MBS_A1:
 
     def _finalize_z_image(self):
         if "[SpecTaroscoPy – PES image]" not in self.l and "[Spectrum Analyzer]" not in self.l and "[STPy - PES image]" not in self.l:
-            print("aaaaa")
+            # print("aaaaa")
             if self.z_sekisan_flag:
                 self.z /= self.totalactscan
                 
@@ -810,9 +810,15 @@ class MBS_A1:
             if axis=="Ek":
                 x=self.x_offseted
             elif axis=="EF":
-                x=self.EF_offseted
+                if self.EF_offseted is None:
+                    x=self.x_offseted
+                else:
+                    x=self.EF_offseted
             elif axis=="VL":
-                x=self.VL_offseted
+                if self.VL_offseted is None:
+                    x=self.x_offseted
+                else:
+                    x=self.VL_offseted
 
             # image型の場合
             if data_type=='image':
