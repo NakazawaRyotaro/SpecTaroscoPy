@@ -39,12 +39,7 @@ DOI: 10.48550/arXiv.2509.21246 (https://doi.org/10.48550/arXiv.2509.21246)
 
 1. 	Pythonをインストールしてください。
 	このアプリはPythonで開発しました (Python3.12.7)。
-	正直、環境とか難しくて私もよくわかっていませんが...。
-	Visual Stadio Codeインストールして、拡張機能でPythonインストールすれば十分と思われる。
-	
-	あるいは、AnacondaなりPythonの公式ページなりからPythonをダウンロードしてください。
-	(公式Python, AnacondaでPythonをインストールした人は)
-	Pythonのpathを通してください。
+	Visual Stadio Codeをインストール、Pythonをインストール・パスを通せば十分と思われる。
 	
 1.	それでは"SpecTaroscoPy" フォルダ --> "src" フォルダ --> "main.py" をVisual Studio Codeなどで実行してください。
 
