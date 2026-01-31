@@ -336,6 +336,8 @@ class App(customtkinter.CTk):
         # photoemission intensity map インスタンス生成
         if self.equipment_combo.get() == "MBS A-1 (Kera G, IMS)/General text":
             self.peim=MBS_A1(idir=IDIR)
+        elif self.equipment_combo.get() == "MBS A-1 (G1, BL7U, UVSOR)":
+            self.peim=MBS_A1(idir=IDIR)
         elif self.equipment_combo.get() == "MBS A-1 (G2, BL7U, UVSOR)":
             self.peim=MBS_A1(idir=IDIR)
         elif self.equipment_combo.get() == "MBS A-1 (G3, BL7U, UVSOR)":
