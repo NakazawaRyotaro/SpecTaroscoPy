@@ -111,6 +111,8 @@ class MBS_A1:
         self.y_slice_center_edcs=[]
         self.y_slice_min=None
         self.y_slice_max=None
+        self.y_slice_min_edcs=None
+        self.y_slice_max_edcs=None
         self.y_slice_center=None
         self.z_edc_offseted=None
         self.z_edc_offset=0
@@ -251,6 +253,8 @@ class MBS_A1:
         self.hn = self.SECO = self.WF = self.kh = self.kh_offseted = None
         self.Vsample = 0
         self.y_slice_min = self.y_slice_max = self.y_slice_center = None
+        self.y_slice_min_edcs=None
+        self.y_slice_max_edcs=None
         self.z_edcs = []
         self.y_step_edcs = None
         self.y_slice_center_edcs = []
@@ -660,16 +664,20 @@ class MBS_A1:
         self.y_slice_center_edcs=[]
         self.z_offset_edcs_lst=[]
         
-        if ymin!=None and ymax!=None:
+        if ymin==None and ymax==None:
             pass
         else:
-            y=y[rpa.get_idx_of_the_nearest(y, self.y_min): rpa.get_idx_of_the_nearest(y, self.y_max)]
-            z=z[rpa.get_idx_of_the_nearest(y, self.y_min): rpa.get_idx_of_the_nearest(y, self.y_max), :]
+            idx_y_slice_min_edcs=rpa.get_idx_of_the_nearest(y, ymin)
+            idx_y_slice_max_edcs=rpa.get_idx_of_the_nearest(y, ymax)
+            self.y_slice_min_edcs=y[idx_y_slice_min_edcs]
+            self.y_slice_max_edcs=y[idx_y_slice_max_edcs]
+            y=y[idx_y_slice_min_edcs: idx_y_slice_max_edcs] 
+            z=z[idx_y_slice_min_edcs: idx_y_slice_max_edcs, :]
 
         idx_num=int(y_step_edcs/abs(y[0]-y[1])) # 切り出しEDC一本(unit)あたりのyのpixel数
         
         # self.y_step_edcs= rpa.decimalRound(idx_num*abs(y[0]-y[1]), 10) # 再計算して正確なy_step_edcsにする。
-        self.y_step_edcs= np.round(idx_num*abs(y[0]-y[1]), ORDER_Y) # 再計算して正確なy_step_edcsにする。
+        self.y_step_edcs= np.round(idx_num*abs(y[0]-y[1])+abs(y[0]-y[1])/1000, ORDER_Y) # 再計算して正確なy_step_edcsにする。
         print("Yステップ:", self.y_step_edcs)
         print("Yステップ (pixel数):", idx_num)
 
@@ -801,6 +809,9 @@ class MBS_A1:
                 added_header.append(f"X Slice Center List\t{self.x_slice_center}")
             elif data_type=='edcs' or data_type=='edcs_offseted':
                 added_header.append("--- EDCs Stacking ---")
+                added_header.append("Y Step EDCs\t" + str(self.y_step_edcs))
+                added_header.append("Y Min EDCs\t" + str(self.y_slice_min_edcs))
+                added_header.append("Y Max EDCs\t" + str(self.y_slice_max_edcs))
                 added_header.append("Y Slice Center\t" + ' '.join(map(str, self.y_slice_center_edcs)))
                 added_header.append("Z Offset EDCs\t" + ' '.join(map(str, self.z_offset_edcs_lst)))
 

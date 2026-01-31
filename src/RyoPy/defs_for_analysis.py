@@ -36,7 +36,7 @@ def check_numeric_in_tab_separated_string(input_string):
     return False
 
 def get_idx_of_the_nearest(data, value, bind_value=None):
-    data = np.array(data)
+    data = np.array(data)   
     
     # bind_valueが指定されている場合、その値を無効化（非常に大きな値に置き換える）
     if bind_value is not None:

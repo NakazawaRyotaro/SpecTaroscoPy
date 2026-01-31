@@ -2936,10 +2936,15 @@ class App(customtkinter.CTk):
             plt.close(self.edcs_stack_pltctrl.fig)  # 特定の図を閉じる
 
         if float(self.edcs_ymin_entry.get()) < np.amin(self.y_offseted):
+            self.edcs_ymin_entry.delete(0, customtkinter.END)
+            self.edcs_ymin_entry.insert(0, str(np.amin(self.y_offseted)))
             ymin = None
         else:
             ymin = float(self.edcs_ymin_entry.get())
+
         if float(self.edcs_ymax_entry.get()) > np.amax(self.y_offseted):
+            self.edcs_ymax_entry.delete(0, customtkinter.END)
+            self.edcs_ymax_entry.insert(0, str(np.amax(self.y_offseted)))
             ymax = None
         else:
             ymax = float(self.edcs_ymax_entry.get())
@@ -2974,7 +2979,7 @@ class App(customtkinter.CTk):
         #     self.filename_edcs_entry.insert(0, f"{self.peim.filename.replace('.txt', '_EDCs_VL.txt')}")
 
         # plot ##########################################
-        self.edcs_stack_pltctrl=PlotControl(title=f"{self.filename_edcs_entry.get()}\nY Step: {self.peim.y_step_edcs} {c_label}", x_label=self.peim.x_label, y_label=self.peim.z_label, figsize_w=EDCS_WIDTH, figsize_h=EDCS_HEIGHT, fontsize=12, plt_interaction=False)
+        self.edcs_stack_pltctrl=PlotControl(title=f"{self.filename_edcs_entry.get()}\nY Step: {np.round(self.peim.y_step_edcs, ORDER_Y)} {c_label}", x_label=self.peim.x_label, y_label=self.peim.z_label, figsize_w=EDCS_WIDTH, figsize_h=EDCS_HEIGHT, fontsize=12, plt_interaction=False)
 
         res = None  
         for i in range(len(self.peim.z_edcs)):
@@ -3019,6 +3024,15 @@ class App(customtkinter.CTk):
 
         self.edcs_ystep_entry.delete(0, customtkinter.END)
         self.edcs_ystep_entry.insert(0, str(self.peim.y_step_edcs))
+        self.edcs_ymin_entry.delete(0, customtkinter.END)
+        self.edcs_ymin_entry.insert(0, str(self.peim.y_slice_min_edcs))
+        self.edcs_ymax_entry.delete(0, customtkinter.END)
+        self.edcs_ymax_entry.insert(0, str(self.peim.y_slice_max_edcs))
+
+        self.edcs_ymax_entry.delete(0, customtkinter.END)
+        self.edcs_ymax_entry.insert(0, str(self.peim.y_slice_max_edcs))
+        self.edcs_ymin_entry.delete(0, customtkinter.END)
+        self.edcs_ymin_entry.insert(0, str(self.peim.y_slice_min_edcs))
         
 
     def update_edcs_stack_range_event(self, event=None):
