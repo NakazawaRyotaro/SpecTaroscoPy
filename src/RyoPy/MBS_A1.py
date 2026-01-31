@@ -648,7 +648,7 @@ class MBS_A1:
             self.z_edc_offseted=self.z_edc-self.z_edc_offset
             # self.z_edc_offseted_=copy.deepcopy(self.z_edc_offseted)
 
-    def generate_edcs_stack(self, y, y_step_edcs, z, mode="normal"):
+    def generate_edcs_stack(self, y, y_step_edcs, z, mode="normal", ymin=None, ymax=None):
         """
         EDCs stack作成
         y (list): 刻まれる軸
@@ -660,6 +660,12 @@ class MBS_A1:
         self.y_slice_center_edcs=[]
         self.z_offset_edcs_lst=[]
         
+        if ymin!=None and ymax!=None:
+            pass
+        else:
+            y=y[rpa.get_idx_of_the_nearest(y, self.y_min): rpa.get_idx_of_the_nearest(y, self.y_max)]
+            z=z[rpa.get_idx_of_the_nearest(y, self.y_min): rpa.get_idx_of_the_nearest(y, self.y_max), :]
+
         idx_num=int(y_step_edcs/abs(y[0]-y[1])) # 切り出しEDC一本(unit)あたりのyのpixel数
         
         # self.y_step_edcs= rpa.decimalRound(idx_num*abs(y[0]-y[1]), 10) # 再計算して正確なy_step_edcsにする。

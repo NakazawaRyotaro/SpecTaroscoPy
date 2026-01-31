@@ -519,6 +519,11 @@ class App(customtkinter.CTk):
         self.edcs_stack_x_lim_max_entry.delete(0, customtkinter.END)
         self.edcs_stack_y_lim_min_entry.delete(0, customtkinter.END)
         self.edcs_stack_y_lim_max_entry.delete(0, customtkinter.END)
+        self.edcs_ymin_entry.delete(0, customtkinter.END)
+        self.edcs_ymax_entry.delete(0, customtkinter.END)
+        self.edcs_ymin_entry.insert(0, self.y_min)
+        self.edcs_ymax_entry.insert(0, self.y_max)
+        
 
         # EDC作成
         self.generate_an_edc() # EDCを作成
@@ -1135,6 +1140,10 @@ class App(customtkinter.CTk):
         self.edcs_stack_x_lim_max_entry.delete(0, customtkinter.END)
         self.edcs_stack_y_lim_min_entry.delete(0, customtkinter.END)
         self.edcs_stack_y_lim_max_entry.delete(0, customtkinter.END)
+        self.edcs_ymin_entry.delete(0, customtkinter.END)
+        self.edcs_ymax_entry.delete(0, customtkinter.END)
+        self.edcs_ymin_entry.insert(0, self.y_min)
+        self.edcs_ymax_entry.insert(0, self.y_max)
 
         # image range調整->image plot
         self.update_range_event()
@@ -2845,22 +2854,33 @@ class App(customtkinter.CTk):
         self.edcs_stack_pltctrl.update_canvas()
 
         # EDC stack #############
+
         self.edcs_stack_frame = customtkinter.CTkFrame(self.image_plot_frame, fg_color='gray20') 
         self.edcs_stack_frame.grid(row=3, column=1, padx=(10,10), pady=(10, 10), sticky="new")         
         # title
         edcs_stack_label = customtkinter.CTkLabel(self.edcs_stack_frame, text='EDCs Generator', font=self.fonts, width=120)
         edcs_stack_label.grid(row=0, column=0, padx=(10,10), pady=(10,10), sticky="ew", columnspan=2)
+        
+        customtkinter.CTkLabel(self.edcs_stack_frame, text="Min Y", width=120).grid(row=1, column=0, padx=(10,10), pady=(0,5), sticky="ew")
+        self.edcs_ymin_entry = customtkinter.CTkEntry(self.edcs_stack_frame, placeholder_text="cps", width=120, font=self.fonts)
+        self.edcs_ymin_entry.grid(row=1, column=1, padx=(0,10), pady=(0,5), sticky="ew")
+        self.edcs_ymin_entry.bind("<Return>", command=self.generate_edcs_stack)
+        customtkinter.CTkLabel(self.edcs_stack_frame, text="Max Y", width=120).grid(row=2, column=0, padx=(10,10), pady=(0,5), sticky="ew")
+        self.edcs_ymax_entry = customtkinter.CTkEntry(self.edcs_stack_frame, placeholder_text="cps", width=120, font=self.fonts)
+        self.edcs_ymax_entry.grid(row=2, column=1, padx=(0,10), pady=(0,5), sticky="ew")
+        self.edcs_ymax_entry.bind("<Return>", command=self.generate_edcs_stack)
+
         # edc step
-        edcs_ystep_label = customtkinter.CTkLabel(self.edcs_stack_frame, text="Y Step", width=120)
-        edcs_ystep_label.grid(row=1, column=0, padx=(10,10), pady=(0,5), sticky="ew")
+        edcs_ystep_label = customtkinter.CTkLabel(self.edcs_stack_frame, text="Step Y", width=120)
+        edcs_ystep_label.grid(row=3, column=0, padx=(10,10), pady=(0,5), sticky="ew")
         self.edcs_ystep_entry = customtkinter.CTkEntry(self.edcs_stack_frame, placeholder_text="", width=120, font=self.fonts)
-        self.edcs_ystep_entry.grid(row=1, column=1, padx=(0,10), pady=(0,5), sticky="ew")
+        self.edcs_ystep_entry.grid(row=3, column=1, padx=(0,10), pady=(0,5), sticky="ew")
         self.edcs_ystep_entry.bind("<Return>", command=self.generate_edcs_stack)
         # Intensity Offset
         edcs_z_offset_label = customtkinter.CTkLabel(self.edcs_stack_frame, text="Offset Intensity", width=120)
-        edcs_z_offset_label.grid(row=2, column=0, padx=(10,10), pady=(0,20), sticky="ew")
+        edcs_z_offset_label.grid(row=4, column=0, padx=(10,10), pady=(0,20), sticky="ew")
         self.edcs_z_offset_entry = customtkinter.CTkEntry(self.edcs_stack_frame, placeholder_text="cps", width=120, font=self.fonts)
-        self.edcs_z_offset_entry.grid(row=2, column=1, padx=(0,10), pady=(0,20), sticky="ew")
+        self.edcs_z_offset_entry.grid(row=4, column=1, padx=(0,10), pady=(0,20), sticky="ew")
         self.edcs_z_offset_entry.bind("<Return>", command=self.generate_edcs_stack)
 
     def generate_edcs_stack_range_frame(self):
@@ -2915,8 +2935,18 @@ class App(customtkinter.CTk):
         if hasattr(self, 'edcs_stack_pltctrl') and self.edcs_stack_pltctrl is not None:
             plt.close(self.edcs_stack_pltctrl.fig)  # 特定の図を閉じる
 
+        if float(self.edcs_ymin_entry.get()) < np.amin(self.y_offseted):
+            ymin = None
+        else:
+            ymin = float(self.edcs_ymin_entry.get())
+        if float(self.edcs_ymax_entry.get()) > np.amax(self.y_offseted):
+            ymax = None
+        else:
+            ymax = float(self.edcs_ymax_entry.get())
+
         # edcs stacking生成
-        self.peim.generate_edcs_stack(self.y_offseted, float(self.edcs_ystep_entry.get()), self.z_image)
+        self.peim.generate_edcs_stack(self.y_offseted, float(self.edcs_ystep_entry.get()), self.z_image, 
+                                      ymin=ymin, ymax=ymax)
         # edcs offset list生成
         self.peim.z_offset_lst_edcs=[]
         for i in range(len(self.peim.z_edcs)):
