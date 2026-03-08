@@ -17,10 +17,10 @@
 謝辞などクレジットを記載いただけますと幸いです。励みになります。
 特にDeconvolution, Second derivative 解析をご利用の際は、以下の文献を引用お願いいたします。
 
-R. Nakazawa, H. Sato, and H. Yoshida, arXiv (2025).
-DOI: 10.48550/arXiv.2509.21246 (https://doi.org/10.48550/arXiv.2509.21246)
+R. Nakazawa, H. Sato, and H. Yoshida, Rev. Sci. Instrum. 97, 023906 (2026); doi: 10.1063/5.0303140
 
-(現在、国際誌に投稿中)
+ArXiv: https://doi.org/10.48550/arXiv.2509.21246
+
 
 
 ## License and Citation
@@ -28,11 +28,10 @@ This project is licensed under the Creative Commons
 Attribution-NonCommercial 4.0 International License (CC BY-NC 4.0).
 If you use "Deconvolution" and "Second derivative" in "SpecTaroscoPy" for your research, please cite:
 
-R. Nakazawa, H. Sato, and H. Yoshida, arXiv (2025).
+R. Nakazawa, H. Sato, and H. Yoshida, Rev. Sci. Instrum. 97, 023906 (2026); doi: 10.1063/5.0303140
 
-DOI: 10.48550/arXiv.2509.21246 (https://doi.org/10.48550/arXiv.2509.21246)
+ArXiv: https://doi.org/10.48550/arXiv.2509.21246
 
-(Under the peer review)
 
 ## 初期設定 (プログラム起動までの手順)
 では、はじめに以下の初期設定をおねがいします。

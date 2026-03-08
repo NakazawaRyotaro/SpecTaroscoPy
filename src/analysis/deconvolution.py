@@ -69,7 +69,7 @@ class App(customtkinter.CTk):
             self.geometry(f"{WINDOW_WIDTH}x{WINDOW_height}")
         else:
             self.geometry("2050, 750")
-        self.title("SpecTaroscoPy — Deconvolution. Please cite the following literature: R. Nakazawa et al., arXiv (2025). DOI: https://doi.org/10.48550/arXiv.2509.21246")
+        self.title("SpecTaroscoPy — Deconvolution. Please cite the following literature: R. Nakazawa et al., Rev. Sci. Instrum. 97, 023906 (2026); doi: 10.1063/5.0303140")
 
         #アイコン
         # try:
@@ -88,7 +88,7 @@ class App(customtkinter.CTk):
         columnspan=7
         # 1つ目のフレームの設定
         # stickyは拡大したときに広がる方向のこと。nsew で4方角で指定する。
-        self.load_data_frame = LoadDataFrame(master=self, has_plot_data_frame=True)
+        self.load_data_frame = LoadDataFrame(master=self, has_plot_data_frame=False)
         self.load_data_frame.grid(row=0, column=0, padx=10, pady=(10,10), sticky="nsew", columnspan=columnspan)
 
         # 2つ目のフレーム設定
@@ -191,10 +191,10 @@ class PlotDataFrame(customtkinter.CTkScrollableFrame): # GUI右部
         self.pltctrl_observed_spectrum.plot_spectrum(x, y, "Measured\nspectrum")
         # プロットをキャンバスに張り付ける
         label = customtkinter.CTkLabel(master=self, text="[Load Data]\nPATH: "+self.spectrum.path+"\nX: "+self.spectrum.x_legend+"\nY: "+self.spectrum.y_legend, font=self.fonts, wraplength=250)
-        label.grid(row=1, column=0, padx=10, pady=(0,10), sticky="sew")
+        label.grid(row=0, column=0, padx=10, pady=(0,10), sticky="sew")
         self.pltctrl_observed_spectrum.fig.tight_layout()
         self.canvas = FigureCanvasTkAgg(self.pltctrl_observed_spectrum.fig, master=self)
-        self.canvas.get_tk_widget().grid(row=2,column=0, padx=20, pady=10, sticky="new")
+        self.canvas.get_tk_widget().grid(row=1,column=0, padx=20, pady=10, sticky="new")
 
     def add_observed_spectrum_bg(self, x, y):
         # plotを行う (この時点では表示されない)
@@ -202,52 +202,50 @@ class PlotDataFrame(customtkinter.CTkScrollableFrame): # GUI右部
         # プロットをキャンバスに張り付ける
         self.pltctrl_observed_spectrum.fig.tight_layout()
         self.canvas = FigureCanvasTkAgg(self.pltctrl_observed_spectrum.fig, master=self)
-        self.canvas.get_tk_widget().grid(row=2,column=0, padx=20, pady=10, sticky="new")     
+        self.canvas.get_tk_widget().grid(row=1,column=0, padx=20, pady=10, sticky="new")     
 
     def plot_spread_function(self, x, y, function_type, path=None, x_legend=None, y_legend=None):
          # plot機能をインポート
         self.pltctrl_spread_function = PlotControl()
-        # label = customtkinter.CTkLabel(master=self, text="------------------------------", font=self.fonts)
-        # label.grid(row=3, column=0, padx=10, pady=(0,10), sticky="ewns")
+        customtkinter.CTkLabel(master=self, text="------------------------------", font=self.fonts).grid(row=2, column=0, padx=10, pady=(0,10), sticky="ewns")
         # gaussianのとき
         if function_type=="Gaussian":
             label = customtkinter.CTkLabel(master=self, text="[Instrumental Function]\nFunction: " + self.spectrum.s_function + "\nFWHM: "+str(self.spectrum.s_fwhm)+"eV", font=self.fonts)
             label.grid(row=3, column=0, padx=10, pady=(0,10), sticky="ewns")
             # plotを行う (この時点では表示されない)
-            self.pltctrl_spread_function.plot_spectrum(x, y, "Instrumental\nfunction")
+            # self.pltctrl_spread_function.plot_spectrum(x, y, "Instrumental\nfunction", scatter=False, color="black", linewidth=2, )
         # インポートするとき
         elif function_type=="Import":
             label = customtkinter.CTkLabel(master=self, text="[Instrumental Function]\nPATH: "+str(path)+"\nX: "+str(x_legend)+"\nY: "+str(y_legend), font=self.fonts, wraplength=250)
         label.grid(row=3, column=0, padx=10, pady=(0,10), sticky="ewns") # label (text) をgridに配置
         
-        self.pltctrl_spread_function.plot_spectrum(x, y, "Instrumental\nfunction") # plotを行う (この時点では表示されない)
+        self.pltctrl_spread_function.plot_spectrum(x, y, "", scatter=True)
+        self.pltctrl_spread_function.ax.set_title("Instrumental function")
         self.pltctrl_spread_function.fig.tight_layout() # layout調整
-        self.canvas = FigureCanvasTkAgg(self.pltctrl_spread_function.fig, master=self) # プロットをキャンバスに張り付ける
-        self.canvas.get_tk_widget().grid(row=4,column=0, padx=20, pady=10, sticky="new") # canvasをgridに配置
+        # self.canvas = FigureCanvasTkAgg(self.pltctrl_spread_function.fig, master=self) # プロットをキャンバスに張り付ける
+        # self.canvas.get_tk_widget().grid(row=4,column=0, padx=20, pady=10, sticky="new") # canvasをgridに配置
 
     def plot_auto_cross_correlation(self, x, y):
-        label = customtkinter.CTkLabel(master=self, text="------------------------------", font=self.fonts)
-        label.grid(row=6, column=0, padx=10, pady=(0,10), sticky="ewns")
-        label = customtkinter.CTkLabel(master=self, text="[Smoothing]", font=self.fonts)
-        label.grid(row=7, column=0, padx=10, pady=(0,10), sticky="ews")
+        customtkinter.CTkLabel(master=self, text="------------------------------", font=self.fonts).grid(row=6, column=0, padx=10, pady=(0,10), sticky="ewns")
+        customtkinter.CTkLabel(master=self, text=f"[Smoothing]\nMethod: {self.spectrum.smoothing_method}", font=self.fonts).grid(row=7, column=0, padx=10, pady=(0,10), sticky="ews")
         # plot機能をインポート
-        self.pltctrl_auto_correration = PlotControl(title='Auto correration')
+        self.pltctrl_auto_correration = PlotControl(title='Cross-correration')
         # plotを行う (この時点では表示されない)
         self.pltctrl_auto_correration.plot_spectrum(x, y, "Measured\nspectrum")
-        self.pltctrl_auto_correration.add_spectrum(x, self.spectrum.i_ac, "Auto-correlation")
+        self.pltctrl_auto_correration.add_spectrum(x, self.spectrum.i_ac, "Cross-correlation", scatter=False, color="black", linewidth=2)
         # プロットをキャンバスに張り付ける
         self.pltctrl_auto_correration.fig.tight_layout() # layout調整
-        self.canvas = FigureCanvasTkAgg(self.pltctrl_auto_correration.fig, master=self)
-        self.canvas.get_tk_widget().grid(row=8,column=0, padx=20, pady=10, sticky="new")    
+        # self.canvas = FigureCanvasTkAgg(self.pltctrl_auto_correration.fig, master=self)
+        # self.canvas.get_tk_widget().grid(row=8,column=0, padx=20, pady=10, sticky="new")    
 
-        self.pltctrl_cross_correration = PlotControl(title='Cross correration')
+        self.pltctrl_cross_correration = PlotControl(title='Autocorreration')
         # plotを行う (この時点では表示されない)
         self.pltctrl_cross_correration.plot_spectrum(x, self.spectrum.s, "Instrumental\nfunction")
-        self.pltctrl_cross_correration.add_spectrum(x, self.spectrum.s_cc, "Cross-correlation")
+        self.pltctrl_cross_correration.add_spectrum(x, self.spectrum.s_cc, "Autocorrelation", scatter=False, color='black', linewidth=2)
         # プロットをキャンバスに張り付ける
         self.pltctrl_cross_correration.fig.tight_layout() # layout調整
-        self.canvas = FigureCanvasTkAgg(self.pltctrl_cross_correration.fig, master=self)
-        self.canvas.get_tk_widget().grid(row=9,column=0, padx=20, pady=10, sticky="new")    
+        # self.canvas = FigureCanvasTkAgg(self.pltctrl_cross_correration.fig, master=self)
+        # self.canvas.get_tk_widget().grid(row=9,column=0, padx=20, pady=10, sticky="new")    
 
     def plot_deconvoluted_spectra(self, x, y, iteration_number_lst):
         """
@@ -262,34 +260,25 @@ class PlotDataFrame(customtkinter.CTkScrollableFrame): # GUI右部
         # deconvolution spectra
         # fig作成 (この時点ではGUIに表示されない)
         self.pltctrl_deconvoluted_spectra = PlotControl("Deconvoluted spectra")
-        # observed spectrum
-        # self.pltctrl_deconvoluted_spectra.plot_spectrum(spectrum.x_bg, spectrum.y_bg, "Measured\nspectrum")
-        # deconvoluted spectra
         self.pltctrl_deconvoluted_spectra.add_deconvoluted_spectra(self.spectrum.x_deconv, self.spectrum.o_deconv_lst, iteration_number_lst, colorbar=True)
         # プロットをキャンバスに張り付ける
         self.pltctrl_deconvoluted_spectra.fig.tight_layout() # layout調整
-        self.canvas = FigureCanvasTkAgg(self.pltctrl_deconvoluted_spectra.fig, master=self)
-        self.canvas.get_tk_widget().grid(row=12,column=0, padx=20, pady=10, sticky="new") 
+        # self.canvas = FigureCanvasTkAgg(self.pltctrl_deconvoluted_spectra.fig, master=self)
+        # self.canvas.get_tk_widget().grid(row=12,column=0, padx=20, pady=10, sticky="new") 
 
         # reconv
         self.pltctrl_reconvoluted_spectrum = PlotControl(title="Reconvoluted spectrum")
         self.pltctrl_reconvoluted_spectrum.plot_spectrum(x, y, "Measured\nspectrum")
         self.pltctrl_reconvoluted_spectrum.fig.tight_layout() # layout調整
-        self.canvas = FigureCanvasTkAgg(self.pltctrl_reconvoluted_spectrum.fig, master=self)
-        self.canvas.get_tk_widget().grid(row=13,column=0, padx=20, pady=(0,10), sticky="new")
+        # self.canvas = FigureCanvasTkAgg(self.pltctrl_reconvoluted_spectrum.fig, master=self)
+        # self.canvas.get_tk_widget().grid(row=13,column=0, padx=20, pady=(0,10), sticky="new")
 
         # rmse
         self.pltctrl_rmse = PlotControl(title="RMSE")
         self.pltctrl_rmse.plot_rainbow_iteration_number(np.arange(0, self.spectrum.iteration_number-0.5, 1), self.spectrum.rmse_i_deconv)
         self.pltctrl_rmse.fig.tight_layout() # layout調整
-        self.canvas = FigureCanvasTkAgg(self.pltctrl_rmse.fig, master=self)
-        self.canvas.get_tk_widget().grid(row=14,column=0, padx=20, pady=(0,10), sticky="new")  
-
-        # d_rmse
-        # self.pltctrl_d_rmse = PlotControl(title="ΔRMSE normarized by RMSE(k=1)", y_scale="log")
-        # self.pltctrl_d_rmse.plot_rainbow_iteration_number(np.arange(1, self.spectrum.iteration_number+0.5, 1), self.spectrum.d_rmse_i_deconv/self.spectrum.rmse_i_deconv[0])
-        # self.canvas = FigureCanvasTkAgg(self.pltctrl_d_rmse.fig, master=self)
-        # self.canvas.get_tk_widget().grid(row=13,column=1, padx=20, pady=10, sticky="sew")
+        # self.canvas = FigureCanvasTkAgg(self.pltctrl_rmse.fig, master=self)
+        # self.canvas.get_tk_widget().grid(row=14,column=0, padx=20, pady=(0,10), sticky="new")  
 
         # 特定のスペクトルを表示させるためのテキストボックス・ボタンを作る。
         self.shown_iteration_label = customtkinter.CTkLabel(master=self, text=f"Iteration Number:", font=self.fonts)
@@ -309,8 +298,10 @@ class PlotDataFrame(customtkinter.CTkScrollableFrame): # GUI右部
         # label = customtkinter.CTkLabel(master=self, text="This button displays all figures.\nYou can save them.", font=self.fonts)
         # label.grid(row=14,column=1, padx=20, pady=10,rowspan=2, sticky="ews")
         
-        show_fig_button = customtkinter.CTkButton(master=self, text="Show All Figures", command=self.show_all_figures_button_callback, font=self.fonts)
-        show_fig_button.grid(row=18,column=0, padx=20, pady=(10,10), sticky="ewn") 
+        # show_fig_button = customtkinter.CTkButton(master=self, text="Apply", command=self.show_all_figures_button_callback, font=self.fonts)
+        # show_fig_button.grid(row=18,column=0, padx=20, pady=(10,10), sticky="ewn") 
+
+        self.pltctrl_rmse.show_figures() # figureを最初から表示させる。
 
     def iteration_number_entry_callback(self, event=None):
         value = int(self.shown_iteration_entry.get())
@@ -331,7 +322,6 @@ class PlotDataFrame(customtkinter.CTkScrollableFrame): # GUI右部
 
         try:# プロットされているspectrum, pointがあれば削除
             self.pltctrl_rmse.remove_scatter_spectrum()
-            # self.pltctrl_d_rmse.remove_scatter_spectrum()
             self.pltctrl_deconvoluted_spectra.remove_line_spectrum()
 
             # reconvoluted spectraは完全初期化
@@ -345,26 +335,28 @@ class PlotDataFrame(customtkinter.CTkScrollableFrame): # GUI右部
         # deconvoluted spectrum
         self.pltctrl_deconvoluted_spectra.add_spectrum(self.spectrum.x_deconv, self.spectrum.o_deconv_lst[value-1], "Deconv,\nk="+str(value), color="black", scatter=False, linewidth=2)
         self.pltctrl_deconvoluted_spectra.fig.tight_layout() # layout調整
-        self.canvas = FigureCanvasTkAgg(self.pltctrl_deconvoluted_spectra.fig, master=self)
-        self.canvas.get_tk_widget().grid(row=12,column=0, padx=20, pady=(10, 10), sticky="new") 
+        # self.canvas = FigureCanvasTkAgg(self.pltctrl_deconvoluted_spectra.fig, master=self)
+        # self.canvas.get_tk_widget().grid(row=12,column=0, padx=20, pady=(10, 10), sticky="new") 
 
         # reconvoluted spectrum
         self.pltctrl_reconvoluted_spectrum.add_spectrum(self.spectrum.x_deconv, self.spectrum.d_i_and_reconv_lst[value-1], "Residual, k="+str(value), color=(0/255, 160/255, 233/255), scatter=False, linewidth=2)
         self.pltctrl_reconvoluted_spectrum.add_spectrum(self.spectrum.x_deconv, self.spectrum.i_reconv_lst[value-1], "Reconv, k="+str(value), color="black", scatter=False, linewidth=2)
         self.pltctrl_reconvoluted_spectrum.fig.tight_layout() # layout調整
-        self.canvas = FigureCanvasTkAgg(self.pltctrl_reconvoluted_spectrum.fig, master=self)
-        self.canvas.get_tk_widget().grid(row=13,column=0, padx=20, pady=(0, 10), sticky="new") 
+        # self.canvas = FigureCanvasTkAgg(self.pltctrl_reconvoluted_spectrum.fig, master=self)
+        # self.canvas.get_tk_widget().grid(row=13,column=0, padx=20, pady=(0, 10), sticky="new") 
 
         # rmse
         self.pltctrl_rmse.add_spectrum(value, self.spectrum.rmse_i_deconv[int(value)-1], "RMSE, k="+str(value), color="black")
         self.pltctrl_rmse.fig.tight_layout() # layout調整
-        self.canvas = FigureCanvasTkAgg(self.pltctrl_rmse.fig, master=self)
-        self.canvas.get_tk_widget().grid(row=14,column=0, padx=20, pady=(0, 10), sticky="new")          
+        # self.canvas = FigureCanvasTkAgg(self.pltctrl_rmse.fig, master=self)
+        # self.canvas.get_tk_widget().grid(row=14,column=0, padx=20, pady=(0, 10), sticky="new")          
 
         # Δrmse
         # self.pltctrl_d_rmse.add_spectrum(value, self.spectrum.d_rmse_i_deconv[int(value)-1]/self.spectrum.rmse_i_deconv[0], "ΔRMSE, k="+str(int(value)), color="black")
         # self.canvas = FigureCanvasTkAgg(self.pltctrl_d_rmse.fig, master=self)
         # self.canvas.get_tk_widget().grid(row=13, column=1, padx=20, pady=10, sticky="new")
+
+        self.show_all_figures_button_callback() # すべてのfigureを表示させる。
 
     def show_all_figures_button_callback(self):
         self.pltctrl_rmse.show_figures()        
@@ -773,6 +765,7 @@ class AnalyzeDataFrame(customtkinter.CTkFrame): # GUI中部
         # 読み込んだスペクトルを表示
         self.master.plot_data_frame.plot_spread_function(self.s_spectrum.x, self.s_spectrum.y, self.spread_combo.get(),
                                                          self.s_spectrum.path, self.x_s_legend_combo.get(), self.y_s_legend_combo.get())
+
 
 
     def choice_smoothing_combo_callback(self, hoge):

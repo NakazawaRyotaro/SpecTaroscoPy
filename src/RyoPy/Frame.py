@@ -271,11 +271,13 @@ class LoadDataFrame(customtkinter.CTkFrame): # GUI上部
             self.master.plot_data_frame.plot_observed_spectrum(self.spectrum.x, self.spectrum.y)
         else:
             self.spectrum.load_xy_data_from_file_auto(self.x_legend_combo.get(), self.y_legend_combo.get(), plot_spectrum=True)
+        
         # flagの初期化 (もっといい方法があるはず)
         global flag_peak_detection
         flag_peak_detection=False
         global flag_bg
         flag_bg=False
+
 
     def destroy_widgets(self, frame, row_number):
     # 配置されたウィジットの情報を取得

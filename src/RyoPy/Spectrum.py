@@ -522,10 +522,14 @@ class Spectrum:
         if plot_spectrum:
             fig, axs = plt.subplots(2, 1, figsize=(5, 7))
             axs[0].scatter(self.x, self.y, label="Imported spectrum", color="tab:gray", s=10)
+            axs[0].set_title(f"File: {self.filename}\nX legend: {self.x_legend}, Y legend: {self.y_legend}")
             axs[0].legend()
             axs[1].scatter(self.x, self.y, label="Imported spectrum", color="tab:gray", s=10)
             axs[1].set_yscale("log")
             axs[1].legend()
+            axs[1].set_xlabel("X")
+            axs[0].set_ylabel("Y")
+            axs[1].set_ylabel("Y")
             plt.show()
 
         # print(self.x)
@@ -893,9 +897,9 @@ class Spectrum:
 
                     # title
                     if analysis=="fitting":
-                        writer.writerow(['[SpecTaroscoPy 0 Fitting]'])
+                        writer.writerow(['[SpecTaroscoPy - Fitting]'])
                     elif analysis=="deconvolution":
-                        writer.writerow(['[SpecTaroscoPy — Deconvolution]'])
+                        writer.writerow(['[SpecTaroscoPy - Deconvolution]'])
 
                     writer.writerow(['Author\tR Nakazawa'])
                     writer.writerow(['Contact\tnakazawa@ims.ac.jp'])
@@ -956,9 +960,9 @@ class Spectrum:
                         # label生成
                         X_INPUT  = f"{self.x_legend}{legend_note}"
                         Y_INPUT  = f"{self.y_legend}{legend_note}"
-                        Y_SPREAD  = f"{self.y_legend}_deconv_s{legend_note}"
-                        X_BG = f"{self.x_legend}_deconv_i{legend_note}"
-                        Y_BG = f"{self.y_legend}_deconv_i{legend_note}"
+                        Y_SPREAD  = [f"{self.y_legend}_deconv_s{legend_note}"]
+                        X_BG = [f"{self.x_legend}_deconv_i{legend_note}"]
+                        Y_BG = [f"{self.y_legend}_deconv_i{legend_note}"]
                         Y_DECONV_lst=[]
                         Y_RECONV_lst=[]
                         Y_RESIDUAL_lst=[]
@@ -1003,7 +1007,7 @@ class Spectrum:
                         writer.writerow([f"X Max RMSERegion\t{self.x_rmse_max}"])
                         writer.writerow([])
                         writer.writerow(["DATA:"])
-                        writer.writerow(["\t".join([X_BG, Y_SPREAD, Y_BG] + Y_DECONV_lst + Y_RECONV_lst + Y_RESIDUAL_lst)]) # legend
+                        writer.writerow(["\t".join(X_BG + Y_SPREAD + Y_BG + Y_DECONV_lst + Y_RECONV_lst + Y_RESIDUAL_lst)]) # legend
 
                         # x data
                         if self.x_bg is None:

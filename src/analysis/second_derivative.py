@@ -875,8 +875,8 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
             if save_peaks:
                 added_header.append(f"Detect Peak\t{self.detect_peak_checkbox.get()}")
                 added_header.append(f"Order (Detect Peak)\t{self.order_detect_peak}")
-                added_header.append(f"X Min\t{self.x_min_entry.get()}")
-                added_header.append(f"X Max\t{self.x_max_entry.get()}")
+                added_header.append(f"X Min Detect Peak\t{self.x_min_entry.get()}")
+                added_header.append(f"X Max Detect Peak\t{self.x_max_entry.get()}")
             
             added_header.append("")
             added_header.append("DATA:")
@@ -886,22 +886,59 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
 
             # ラベル追加
             # 数値データにラベルがあるか確認。ラベル付きの場合はラベルの末尾に2Der追記する。
-            # DATA: の次の1行を取得
-            next_DATA_line = self.image[0].l[data_index].strip().split()
-            label=[]
-            if not all(element.replace('.', '', 1).isdigit() for element in next_DATA_line):
-                label_ = []
-                label_.append(next_DATA_line)
-                # 各要素の末尾に文字列を追記
-                if mode=='2der' and save_peaks==False: #二次微分解析の場合
-                    label_ = [[f"{element}2Der" for element in label] for label in label_]
-                # print("Labels:", label_)
-                elif mode=='curX' and save_peaks==False: #Curvature解析の場合
-                    label_ = [[f"{element}CurX" for element in label] for label in label_]
-                label="\t".join(label_[0]) if label_ else ""
-            else:
-                pass
+            # label=[]
+            # # DATA: の次の1行を取得
+            # next_DATA_line = self.image[0].l[data_index].strip().split()
+            # if not all(element.replace('.', '', 1).isdigit() for element in next_DATA_line):
+            #     label_ = []
+            #     label_.append(next_DATA_line)
+            #     # 各要素の末尾に文字列を追記
+            #     if mode=='2der' and save_peaks==False: #二次微分解析の場合
+            #         label_ = [[f"{element}2Der" for element in label] for label in label_]
+            #     # print("Labels:", label_)
+            #     elif mode=='curX' and save_peaks==False: #Curvature解析の場合
+            #         label_ = [[f"{element}CurX" for element in label] for label in label_]
+            #     label="\t".join(label_[0]) if label_ else ""
+            # else:
+            #     pass
 
+            # ---- helper functions (class内でも外でもOK) ----
+            def _is_numeric_row(row: list[str]) -> bool:
+                """rowの全要素が float に変換できるなら True（-1.2, 1e-3, NaN もOK）"""
+                try:
+                    for x in row:
+                        float(x)
+                    return True
+                except ValueError:
+                    return False
+            def _decorate_labels(labels: list[str], mode: str, save_peaks: bool) -> list[str]:
+                """mode と save_peaks に応じてサフィックスを付ける（必要なときだけ）"""
+                if save_peaks:
+                    return labels
+                suffix_map = {
+                    "2der": "2Der",
+                    "curX": "CurX",
+                }
+                suffix = suffix_map.get(mode, "")
+                if not suffix:
+                    return labels
+                return [f"{x}{suffix}" for x in labels]
+
+            # ---- main logic (あなたの元コードの置き換え部分) ----
+            label = ""  # 最終的に出す「タブ区切りラベル文字列」。無ければ空文字。
+
+            # DATA: の次の1行を取得（想定）
+            row = self.image[0].l[data_index].strip().split()
+
+            # ラベル行かどうか判定：全要素が数値ならデータ行→ラベル無し
+            if not _is_numeric_row(row):
+                labels = row[:]  # 1次元のまま
+                labels = _decorate_labels(labels, mode, save_peaks)
+                label = "\t".join(labels) # この後、必要なら label を使う
+                print(label)
+            
+            
+            
             # データ追加
             # peak detect dataのsave
             if save_peaks:
@@ -921,7 +958,7 @@ class SecondDerivativeFrame(customtkinter.CTkFrame): # GUI中部
                     z=self.z_curvature
                 
                 # save
-                if label != []:
+                if label != "":
                     data.append(label) # ラベル追加
                 for i in range(len(z[0])):
                     data_lst = [f"{self.x[i]}"]

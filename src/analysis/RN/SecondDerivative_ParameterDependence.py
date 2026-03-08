@@ -19,9 +19,9 @@ import customtkinter as ctk
 # 入力するファイルのパスを指定 #################
 # ""の中にファイルの絶対pathをコピペする 
 # ex) filepath = Path("/Users/name/Documents/...(略).../解析するcsvfile.csv")
-# filepath = "Pupup window"
+filepath = "Pupup window" # GUI
 # filepath = Path("ここにコピペ")
-filepath = Path("/Users/ryotaro/Documents/実験データ/20241217_organic_conductors/A1rawdata/beta7_9/STPy_6_5_5_PESImage/Example_SecondDerivative.csv")
+# filepath = Path("/Users/ryotaro/Documents/実験データ/20241217_organic_conductors/A1rawdata/beta7_9/STPy_6_5_5_PESImage/Example_SecondDerivative.csv")
 
 # SGパラメータ #############################
 sg_iteration = 4 # SGの繰り返し数
@@ -73,6 +73,7 @@ def ask_filepath():
         app,
         text=(
             "解析するCSVファイルのフルパスをここにコピペしてください。\n"
+            "labelはxとyにしてください。\n"
             "例: /Users/name/Documents/data/example.csv"
         ),
         justify="left"

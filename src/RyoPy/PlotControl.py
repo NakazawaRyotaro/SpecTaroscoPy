@@ -5,6 +5,7 @@ from matplotlib.colors import Normalize
 from matplotlib.widgets import Slider
 from matplotlib.ticker import ScalarFormatter
 
+
 class PlotControl:
     """
     matplotlib でプロットを行う
@@ -42,15 +43,18 @@ class PlotControl:
         self.ax.autoscale()
         self.fig.canvas.draw_idle()
 
+        self.norm_rainbow = 0.9
+
     # xとyでscatterプロット (初回)
-    def plot_spectrum(self, x, y, label, new_x_label=None, new_y_label=None, new_title=None, color="tab:gray", 
+    def plot_spectrum(self, x, y, label=None, new_x_label=None, new_y_label=None, new_title=None, color="tab:gray", 
                       scatter=True, scientific_yscale=True, linewidth=2):
         self.color=color
         if scatter:
             self.scatter0.append(self.ax.scatter(x, y, label=label, color=self.color, s=10, zorder=0.5))
         else:
             self.line0.append(self.ax.plot(x, y, label=label, color=self.color, linewidth=linewidth))
-        self.ax.legend(loc="best")
+        if label!=None and label!="":
+            self.ax.legend(loc="best")
         if new_x_label is not None:
             self.x_label=new_x_label
         self.ax.set_xlabel(self.x_label)
@@ -205,7 +209,7 @@ class PlotControl:
 
         for i in range(len(iteration_number_lst)):
             if colorbar:
-                color = cmap(norm(i)/0.9) #カラーバーの変数
+                color = cmap(norm(iteration_number_lst[i])/self.norm_rainbow) #カラーバーの変数
                 # plot
                 self.ax.plot(x, y_lst[iteration_number_lst[i]-1],
                             color=color, 
@@ -253,7 +257,7 @@ class PlotControl:
         sm.set_array([])  # カラーマップにデータを関連付けない（ダミーデータを設定）
 
         for i in range(len(x)):
-            color = cmap(norm(i)/0.9) #カラーバーの変数
+            color = cmap(norm(i)/self.norm_rainbow) #カラーバーの変数
 
             self.ax.scatter(x[i], y[i], 
                             color=color,
