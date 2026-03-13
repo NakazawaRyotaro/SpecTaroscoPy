@@ -131,7 +131,7 @@ if save_output:
 cfsys=Spectrum()
 cfsys.read_labels_from_file_auto(path=import_file_path_cfs)
 print(cfsys.label_list)
-cfsys.load_xy_data_from_file_auto(x_legend=x_legend_cfs, y_legend=y_legend_cfs, plot_spectrum=False)
+cfsys.load_xy_data_from_file_auto(x_legend=x_legend_cfs, y_legend=y_legend_cfs, encording="utf-8-sig", plot_spectrum=False)
 # PE
 
 # PE規格化「しない」場合 (する場合コメントアウト)

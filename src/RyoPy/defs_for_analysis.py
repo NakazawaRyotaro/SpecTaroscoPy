@@ -216,11 +216,11 @@ def get_2Ddata_from_csv(path, x_leg, y_leg, plot_spectrum=False):
         # print("plot終了")
     return sorted_x, sorted_y
 
-def get_2Ddata_from_text_file_auto(path, x_leg, y_leg, plot_spectrum=False):
+def get_2Ddata_from_text_file_auto(path, x_leg, y_leg, encoding="utf-8", delimiter=None, plot_spectrum=False):
     """
     こっちが推奨。
     """
-    with open(path, encoding="utf-8", errors='replace') as f:
+    with open(path, encoding=encoding, errors='replace') as f:
         lines = f.readlines()
 
     # nanやinfを許容する数値行判定
@@ -245,14 +245,15 @@ def get_2Ddata_from_text_file_auto(path, x_leg, y_leg, plot_spectrum=False):
             break
     else:
         raise ValueError("データ行の検出に失敗しました。")
+    
 
-    # 区切り文字推定
-    if '\t' in header_line:
-        delimiter = '\t'
-    elif ',' in header_line:
-        delimiter = ','
-    # else:
-    #     delimiter = r'\s+'
+    if delimiter is None:
+        # 区切り文字推定
+        if '\t' in header_line:
+            delimiter = '\t'
+        elif ',' in header_line:
+            delimiter = ','
+
 
     # ラベル読み込み（空白を除去）
     label_list = [label.strip() for label in re.split(delimiter, header_line)]
@@ -268,7 +269,7 @@ def get_2Ddata_from_text_file_auto(path, x_leg, y_leg, plot_spectrum=False):
 
     # ラベル存在チェック
     if x_leg not in df.columns or y_leg not in df.columns:
-        raise KeyError(f"'{x_leg}' または '{y_leg}' がラベルに存在しません。\n存在するラベル: {df.columns.tolist()}")
+        raise KeyError(f"'{x_leg}' または '{y_leg}' がラベルに存在しません。存在するラベル: {df.columns.tolist()}")
 
     # x, y抽出
     x = df[x_leg]

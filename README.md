@@ -17,7 +17,8 @@
 謝辞などクレジットを記載いただけますと幸いです。励みになります。
 特にDeconvolution, Second derivative 解析をご利用の際は、以下の文献を引用お願いいたします。
 
-R. Nakazawa, H. Sato, and H. Yoshida, Rev. Sci. Instrum. 97, 023906 (2026); doi: 10.1063/5.0303140
+R. Nakazawa, H. Sato, and H. Yoshida, Rev. Sci. Instrum. 97, 023906 (2026)|
+doi: 10.1063/5.0303140
 
 ArXiv: https://doi.org/10.48550/arXiv.2509.21246
 
@@ -28,7 +29,8 @@ This project is licensed under the Creative Commons
 Attribution-NonCommercial 4.0 International License (CC BY-NC 4.0).
 If you use "Deconvolution" and "Second derivative" in "SpecTaroscoPy" for your research, please cite:
 
-R. Nakazawa, H. Sato, and H. Yoshida, Rev. Sci. Instrum. 97, 023906 (2026); doi: 10.1063/5.0303140
+R. Nakazawa, H. Sato, and H. Yoshida, Rev. Sci. Instrum. 97, 023906 (2026)
+doi: 10.1063/5.0303140
 
 ArXiv: https://doi.org/10.48550/arXiv.2509.21246
 

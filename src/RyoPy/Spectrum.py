@@ -230,7 +230,7 @@ class Spectrum:
             plt.ion()
     
 
-    def read_labels_from_file_auto(self, idir=None, path=None, filename=None):
+    def read_labels_from_file_auto(self, idir=None, path=None, filename=None, encording="utf-8"):
         """
         テキスト/CSVファイルから、ラベル行を自動検出して列ラベルをリストで返す関数。
         条件：
@@ -267,7 +267,7 @@ class Spectrum:
             self.path=path_lst[0]
             self.filename=filename_lst[0]
 
-        with open(self.path, encoding='utf-8', errors='replace') as f:
+        with open(self.path, encoding=encording, errors='replace') as f:
             lines = f.readlines()
 
         for i in range(len(lines) - 3):  # 最低2行の数値をチェック
@@ -472,7 +472,7 @@ class Spectrum:
 
 
     # csv fileを開く。nan対応
-    def load_xy_data_from_file_auto(self, x_legend, y_legend, plot_spectrum=False):
+    def load_xy_data_from_file_auto(self, x_legend, y_legend, encoding="utf-8", delimiter=None, plot_spectrum=False):
         # 初期化
         self.x=None
         self.y=None
@@ -514,7 +514,8 @@ class Spectrum:
         # path内のx, y dataを取得
         self.x_legend = x_legend
         self.y_legend = y_legend
-        self.x, self.y = rpa.get_2Ddata_from_text_file_auto(self.path, self.x_legend, self.y_legend)
+        self.x, self.y = rpa.get_2Ddata_from_text_file_auto(self.path, self.x_legend, self.y_legend, 
+                                                            encoding=encoding, delimiter=delimiter, plot_spectrum=False)
         self.x_step=np.round(abs(self.x[0]-self.x[1]),8) # なんとなく8桁で丸める。誤差対策。
 
         print("Spectrum data is obtained.")
