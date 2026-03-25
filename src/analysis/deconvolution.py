@@ -767,7 +767,7 @@ class AnalyzeDataFrame(customtkinter.CTkFrame): # GUI中部
         self.master.plot_data_frame.plot_spread_function(self.s_spectrum.x, self.s_spectrum.y, self.spread_combo.get(),
                                                          self.s_spectrum.path, self.x_s_legend_combo.get(), self.y_s_legend_combo.get())
 
-        self.pltctrl_spread_function.plt.show()
+        self.pltctrl_spread_function.show_figures()
 
 
     def choice_smoothing_combo_callback(self, hoge):
