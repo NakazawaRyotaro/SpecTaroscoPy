@@ -193,16 +193,16 @@ class PlotDataFrame(customtkinter.CTkScrollableFrame): # GUI右部
         label = customtkinter.CTkLabel(master=self, text="[Load Data]\nPATH: "+self.spectrum.path+"\nX: "+self.spectrum.x_legend+"\nY: "+self.spectrum.y_legend, font=self.fonts, wraplength=250)
         label.grid(row=0, column=0, padx=10, pady=(0,10), sticky="sew")
         self.pltctrl_observed_spectrum.fig.tight_layout()
-        self.canvas = FigureCanvasTkAgg(self.pltctrl_observed_spectrum.fig, master=self)
-        self.canvas.get_tk_widget().grid(row=1,column=0, padx=20, pady=10, sticky="new")
+        # self.canvas = FigureCanvasTkAgg(self.pltctrl_observed_spectrum.fig, master=self)
+        # self.canvas.get_tk_widget().grid(row=1,column=0, padx=20, pady=10, sticky="new")
 
     def add_observed_spectrum_bg(self, x, y):
         # plotを行う (この時点では表示されない)
         self.pltctrl_observed_spectrum.add_spectrum(x, y, "Remove BG")
         # プロットをキャンバスに張り付ける
         self.pltctrl_observed_spectrum.fig.tight_layout()
-        self.canvas = FigureCanvasTkAgg(self.pltctrl_observed_spectrum.fig, master=self)
-        self.canvas.get_tk_widget().grid(row=1,column=0, padx=20, pady=10, sticky="new")     
+        # self.canvas = FigureCanvasTkAgg(self.pltctrl_observed_spectrum.fig, master=self)
+        # self.canvas.get_tk_widget().grid(row=1,column=0, padx=20, pady=10, sticky="new")     
 
     def plot_spread_function(self, x, y, function_type, path=None, x_legend=None, y_legend=None):
          # plot機能をインポート
@@ -224,7 +224,9 @@ class PlotDataFrame(customtkinter.CTkScrollableFrame): # GUI右部
         self.pltctrl_spread_function.fig.tight_layout() # layout調整
         # self.canvas = FigureCanvasTkAgg(self.pltctrl_spread_function.fig, master=self) # プロットをキャンバスに張り付ける
         # self.canvas.get_tk_widget().grid(row=4,column=0, padx=20, pady=10, sticky="new") # canvasをgridに配置
-
+        self.pltctrl_spread_function.show_figures() # figureを最初から表示させる。
+    
+        
     def plot_auto_cross_correlation(self, x, y):
         customtkinter.CTkLabel(master=self, text="------------------------------", font=self.fonts).grid(row=6, column=0, padx=10, pady=(0,10), sticky="ewns")
         customtkinter.CTkLabel(master=self, text=f"[Smoothing]\nMethod: {self.spectrum.smoothing_method}", font=self.fonts).grid(row=7, column=0, padx=10, pady=(0,10), sticky="ews")
@@ -359,8 +361,7 @@ class PlotDataFrame(customtkinter.CTkScrollableFrame): # GUI右部
         self.show_all_figures_button_callback() # すべてのfigureを表示させる。
 
     def show_all_figures_button_callback(self):
-        self.pltctrl_rmse.show_figures()        
-
+        self.pltctrl_rmse.show_figures()            
 
 # スペクトルの前処理
 class PreprocessingFrame(customtkinter.CTkFrame): # GUI中部
@@ -766,6 +767,7 @@ class AnalyzeDataFrame(customtkinter.CTkFrame): # GUI中部
         self.master.plot_data_frame.plot_spread_function(self.s_spectrum.x, self.s_spectrum.y, self.spread_combo.get(),
                                                          self.s_spectrum.path, self.x_s_legend_combo.get(), self.y_s_legend_combo.get())
 
+        self.pltctrl_spread_function.plt.show()
 
 
     def choice_smoothing_combo_callback(self, hoge):

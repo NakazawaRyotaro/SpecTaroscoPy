@@ -1,6 +1,6 @@
 # ToDoList
 - MBS_A1 classで初期化するインスタンス変数がおおい。
-
+- arpes imageでEk offsetをかけて波数変換すると、EDC 強度が変わる（averageとそれぞれのデータが重ならなくなる）
 dataclassを使用し、インスタンス変数を減らす。
 
 ```chatGPT

@@ -538,7 +538,9 @@ class MBS_A1:
             for i in range(len(self.y_offseted)):
                 kh_2d.append([0.5123*np.sqrt(self.x[j]+self.Vsample)*np.sin(np.radians(self.y[i])) for j in range(len(self.x))])
                 # kh_2d=np.round(np.array(kh_2d),8)
-                kh_2d_offseted.append([0.5123*np.sqrt(self.x[j]+self.Vsample)*np.sin(np.radians(self.y_offseted[i])) for j in range(len(self.x))])
+                # kh_2d_offseted.append([0.5123*np.sqrt(self.x[j]+self.Vsample)*np.sin(np.radians(self.y_offseted[i])) for j in range(len(self.x))])
+                # 改造
+                kh_2d_offseted.append([0.5123*np.sqrt(self.x_offseted[j])*np.sin(np.radians(self.y_offseted[i])) for j in range(len(self.x_offseted))])
                 # kh_2d_offseted=np.round(np.array(kh_2d_offseted),8)
                 x_2d.append(self.x)
                 x_2d_offseted.append(self.x_offseted)

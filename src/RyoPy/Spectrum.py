@@ -523,7 +523,7 @@ class Spectrum:
         if plot_spectrum:
             fig, axs = plt.subplots(2, 1, figsize=(5, 7))
             axs[0].scatter(self.x, self.y, label="Imported spectrum", color="tab:gray", s=10)
-            axs[0].set_title(f"File: {self.filename}\nX legend: {self.x_legend}, Y legend: {self.y_legend}")
+            axs[0].set_title(f"File: {self.filename}\nX legend: {self.x_legend},\nY legend: {self.y_legend}")
             axs[0].legend()
             axs[1].scatter(self.x, self.y, label="Imported spectrum", color="tab:gray", s=10)
             axs[1].set_yscale("log")
