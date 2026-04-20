@@ -13,7 +13,7 @@ from tkinter import messagebox
 from matplotlib.ticker import ScalarFormatter, LogFormatter
 from scipy.interpolate import interp1d
 
-# -------------------- モジュール読み込み --------------------
+# -------------------- モジュール読み込み -------------------- 
 import sys
 import os
 
