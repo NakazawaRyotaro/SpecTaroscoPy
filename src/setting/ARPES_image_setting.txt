@@ -12,7 +12,7 @@ archive...darkblue navy mediumblue indigo black darkslategray darkslateblue
 #####################################################################################
 # window size
 window_width_photoemission_intensity_map	1270.0
-window_height_photoemission_intensity_map	740.0
+window_height_photoemission_intensity_map	900.0
 # image size
 image_width_photoemission_intensity_map	3.8
 image_height_photoemission_intensity_map	2.7

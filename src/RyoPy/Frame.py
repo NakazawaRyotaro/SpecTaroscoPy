@@ -252,11 +252,12 @@ class LoadDataFrame(customtkinter.CTkFrame): # GUI上部
                                             values=self.spectrum.label_list)
         self.x_legend_combo.grid(row=1, column=2, padx=10, pady=(0,10), sticky="w")  
 
-        try:
-            # plot_data_frameを初期化
-            self.destroy_widgets(self.master.plot_data_frame, 1)
-        except AttributeError:
-            pass
+        if self.has_plot_data_frame:
+            try:
+                # plot_data_frameを初期化
+                self.destroy_widgets(self.master.plot_data_frame, 1)
+            except AttributeError:
+                pass
 
     # loadボタンを押したときにファイルを読み込む
     def load_button_callback(self, plot_spectrum=True):
