@@ -509,7 +509,7 @@ class AnalyzeDataFrame(customtkinter.CTkScrollableFrame): # GUI中部
             },
             "Fermi–edge of metal (conv. Gauss)": {
                 "path": "Fermi_edge_function.png",
-                "size": (360, 65),
+                "size": (300, 65),
                 "text": "Kinetic Energy → set T > 0; Binding Energy → set T =< 0.",
             },
             "Fermi–edge of degenerate semicon. (conv. Gauss)": {
