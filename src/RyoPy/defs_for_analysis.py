@@ -293,7 +293,7 @@ def get_2Ddata_from_text_file_auto(path, x_leg, y_leg, encoding="utf-8", delimit
 
     return sorted_x, sorted_y
 
-def make_gaussian(x, x0, fwhm, peak_intensity=1, bg=0): 
+def make_gaussian(x, x0, fwhm, peak_intensity=1, bg=0, area_normalized=False): 
     """
     gaussianを作ります。ピーク強度はデフォルトでは1です。このとき面積が1になります。
     Args:
@@ -303,11 +303,16 @@ def make_gaussian(x, x0, fwhm, peak_intensity=1, bg=0):
         peak_intensity (float): gaussianのピーク強度。デフォルトは1です。
     #xデータ、中心、FWHM, ピーク強度
     """
-    if peak_intensity==1:
-        return peak_intensity/((fwhm/2.354820)*np.sqrt(2*math.pi)) * np.exp(-(x-x0)**2 /(2*((fwhm/2.354820)**2))) + bg
+    sigma = fwhm / 2.354820  # FWHMから標準偏差を計算
+
+    if area_normalized:
+        coff = peak_intensity / (sigma * np.sqrt(2 * math.pi))  # 面積を1に正規化するための係数
+        
     else:
-        return peak_intensity * np.exp(-(x-x0)**2 /(2*((fwhm/2.354820)**2))) + bg
-    
+        coff = peak_intensity
+        
+    return coff * np.exp(-(x-x0)**2 / (2*(sigma**2))) + bg
+
 def make_two_gaussian(x, x1, fwhm1, y_peak1, x2, fwhm2, y_peak2, bg=0):
     g1 = make_gaussian(x, x1, fwhm1, y_peak1)
     g2 = make_gaussian(x, x2, fwhm2, y_peak2)

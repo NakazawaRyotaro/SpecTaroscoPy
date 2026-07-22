@@ -1162,7 +1162,7 @@ class Spectrum:
         self.s_function=func
         if self.s_function=="Gaussian":
             self.s_fwhm= params[0]
-            self.s = rpa.make_gaussian(self.x_s, 0, self.s_fwhm)
+            self.s = rpa.make_gaussian(self.x_s, 0, self.s_fwhm, peak_intensity=1, bg=0, area_normalized=True) # bg=0, 面積1で規格化される
         elif self.s_function=="Import":
             self.s = params[0] # 関数を入力する
             self.s = self.s/np.sum(self.s*abs(x[0]-x[1])) #面積1に規格化->Jansson法でうまくいく
