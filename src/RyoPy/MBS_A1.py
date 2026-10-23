@@ -573,7 +573,7 @@ class MBS_A1:
             self.y_label = r"$k_{\parallel} \ \mathrm{(\AA^{-1})}$"
         else:
             self.z_kh = None
-            self.kn = None
+            self.z_kh_offseted = None
             self.kh_offseted = None
             self.kh_step = None
             self.z_kh_paths = []

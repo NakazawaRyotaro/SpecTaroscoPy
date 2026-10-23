@@ -480,11 +480,11 @@ def make_fermi_edge_metal_conv_gaussian(x, T, E_F, fwhm, a=0, b=1, bg=0, k_B=8.6
     dif_len_x = len(x)-len(x_)
     # x_の作成がうまくいかず、1要素ずれることがあるので調整する。
     if dif_len_x % 2 != 1:
-        x_ = np.append(x_, x_[-1] + np.around(x_, 6))
+        x_ = np.append(x_, x_[-1] + step)
 
     FD =  (a * x_ + b) / ( 1 + np.exp((x_-E_F)/(k_B*T)) )
     x_s = np.round(np.arange(-(len(x_)-1)*step/2, (len(x_)-1)*step/2 + step/10, step), 6)
-    s = make_gaussian(x_s, 0, fwhm)
+    s = make_gaussian(x_s, 0, fwhm, peak_intensity=1, bg=0, area_normalized=True)
     y_ = np.convolve(s, FD, mode="same") * step
     # x_の作成がうまくいかず、1要素ずれることがあるので調整する。
     y = y_[get_idx_of_the_nearest(x_, x_min) : get_idx_of_the_nearest(x_, x_max)+1] + bg
@@ -531,7 +531,7 @@ def make_fermi_edge_degenerate_semicon_conv_gauss(x,
     dif_len_x = len(x)-len(x_)
     # x_の作成がうまくいかず、1要素ずれることがあるので調整する。
     if dif_len_x % 2 != 1:
-        x_ = np.append(x_, x_[-1] + np.around(x_, 6))
+        x_ = np.append(x_, x_[-1] + step)
     ## ここまで拡張
 
     # フェルミディラック分布
@@ -583,7 +583,7 @@ def make_fermi_edge_degenerate_semicon_conv_two_gauss(x,
     dif_len_x = len(x)-len(x_)
     # x_の作成がうまくいかず、1要素ずれることがあるので調整する。
     if dif_len_x % 2 != 1:
-        x_ = np.append(x_, x_[-1] + np.around(x_, 6))
+        x_ = np.append(x_, x_[-1] + step)
     ## ここまで拡張
 
     # フェルミディラック分布
@@ -638,7 +638,7 @@ def make_fermi_edge_degenerate_semicon_conv_lorentz_gauss( x,
     dif_len_x = len(x)-len(x_)
     # x_の作成がうまくいかず、1要素ずれることがあるので調整する。
     if dif_len_x % 2 != 1:
-        x_ = np.append(x_, x_[-1] + np.around(x_, 6))
+        x_ = np.append(x_, x_[-1] + step)
     ## ここまで拡張
 
     # フェルミディラック分布
