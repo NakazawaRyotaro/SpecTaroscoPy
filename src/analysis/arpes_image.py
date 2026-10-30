@@ -346,7 +346,7 @@ class App(customtkinter.CTk):
             self.peim=SCIENTA_DA30(idir=IDIR)
         elif self.equipment_combo.get() == "IgorPro Image":
             self.peim=IgorPro_Image(idir=IDIR)
-
+        
 
         if self.peim.z is None: # 平均化処理できなかった場合は、最後に読み込んだfileを解析する
             self.peim.z = copy.deepcopy(self.peim.z_paths[-1])
