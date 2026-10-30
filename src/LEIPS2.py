@@ -673,7 +673,11 @@ y_leet_shifted, y_leips_shifted, shifted_point, y_leet_dif, y_leet_dif_shifted =
                                                                                 ref_scan=idx_ref_scan)
 
 # LEETを基準にシフトさせたLEIPSの平均を計算してプロット
+<<<<<<< HEAD
 y_leips_shifted_avg = calculate_average_intensity(y_leips_shifted, end=3)
+=======
+y_leips_shifted_avg = calculate_average_intensity(y_leips_shifted)
+>>>>>>> main/HEAD
 
 Eb_EF, X_EF = convert_Ek_to_Eb(x, X_EF_ref, WAVELENGTH_BPF_ref, WAVELENGTH_BPF)
 
