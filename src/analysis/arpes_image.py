@@ -31,6 +31,7 @@ from RyoPy import defs_for_analysis as rpa
 from RyoPy.MBS_A1 import MBS_A1
 from RyoPy.SCIENTA_DA30 import SCIENTA_DA30
 from RyoPy.IgorPro_Image import IgorPro_Image
+from RyoPy.IgorPro_Image_XYswapped import IgorPro_Image_XYswapped
 from RyoPy.PlotControl import ImagePlotControl, PlotControl
 from RyoPy.Spectrum import Spectrum
 from setting.setting import App as SettingApp
@@ -294,12 +295,15 @@ class App(customtkinter.CTk):
         load_file_button.grid(row=0, column=3, padx=(0,10), pady=(10,5), sticky="w")
         customtkinter.CTkLabel(self.load_data_frame, text='Equipment', width=70).grid(row=0, column=1, padx=(5,5), pady=(10,5), sticky="e")
         self.equipment_combo = customtkinter.CTkComboBox(self.load_data_frame, font=self.fonts, command=None, width=200,
-                                                    values=["MBS A-1 (Kera G, IMS)/General text", 
-                                                            "Scienta DA30 (IMS)",
-                                                            "MBS A-1 (G1, BL7U, UVSOR)", 
-                                                            "MBS A-1 (G2, BL7U, UVSOR)", 
-                                                            "MBS A-1 (G3, BL7U, UVSOR)",
-                                                            "IgorPro Image"
+                                                    values=[
+                                                            "R3000, R4000, DA30",
+                                                            "A-1 (Kera G, IMS)",
+                                                            "A-1 (G1, BL7U, UVSOR)", 
+                                                            "A-1 (G2, BL7U, UVSOR)", 
+                                                            "A-1 (G3, BL7U, UVSOR)",
+                                                            "General text", 
+                                                            "IgorPro Image",
+                                                            "IgorPro Image (X/Y swapped)"
                                                             ])
         self.equipment_combo.grid(row=0, column=2, padx=(0, 9), pady=(10,5), sticky="ew", columnspan=1)
         # パスを表示
@@ -334,19 +338,18 @@ class App(customtkinter.CTk):
         self.z_ini=None
 
         # photoemission intensity map インスタンス生成
-        if self.equipment_combo.get() == "MBS A-1 (Kera G, IMS)/General text":
-            self.peim=MBS_A1(idir=IDIR)
-        elif self.equipment_combo.get() == "MBS A-1 (G1, BL7U, UVSOR)":
-            self.peim=MBS_A1(idir=IDIR)
-        elif self.equipment_combo.get() == "MBS A-1 (G2, BL7U, UVSOR)":
-            self.peim=MBS_A1(idir=IDIR)
-        elif self.equipment_combo.get() == "MBS A-1 (G3, BL7U, UVSOR)":
-            self.peim=MBS_A1(idir=IDIR)
-        elif self.equipment_combo.get() == "Scienta DA30 (IMS)":
-            self.peim=SCIENTA_DA30(idir=IDIR)
-        elif self.equipment_combo.get() == "IgorPro Image":
-            self.peim=IgorPro_Image(idir=IDIR)
-        
+        equipment_classes = {
+            "R3000, R4000, DA30": SCIENTA_DA30,
+            "A-1 (Kera G, IMS)": MBS_A1,
+            "A-1 (G1, BL7U, UVSOR)": MBS_A1,
+            "A-1 (G2, BL7U, UVSOR)": MBS_A1,
+            "A-1 (G3, BL7U, UVSOR)": MBS_A1,
+            "General text": MBS_A1,
+            "IgorPro Image": IgorPro_Image,
+            "IgorPro Image (X/Y swapped)": IgorPro_Image_XYswapped,
+        }
+        equipment = self.equipment_combo.get()
+        self.peim = equipment_classes[equipment](idir=IDIR)
 
         if self.peim.z is None: # 平均化処理できなかった場合は、最後に読み込んだfileを解析する
             self.peim.z = copy.deepcopy(self.peim.z_paths[-1])

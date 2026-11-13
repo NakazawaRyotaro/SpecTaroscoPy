@@ -86,143 +86,141 @@ def main_image_analysis():
     """
 
 class IgorPro_Image(MBS_A1):
+    """Read Igor Pro tab-delimited image exports.
+
+    File layout: first line is a title; second line contains the horizontal
+    coordinates after an empty first cell; subsequent lines contain a vertical
+    coordinate followed by intensity values.
+
+    SpecTaroScopy convention: x = energy (file's first column),
+    y = momentum/angle (file's second line), z.shape = (len(y), len(x)).
+    """
 
     def load_data(self):
         self._initialize_variables()
-        
-        x_max_old = None
-        x_min_old = None
+        # Parent initialization aliases these lists; keep them independent.
+        self.x_paths = []
+        self.x_offseted_paths = []
+        self.EF_paths = []
+        self.EF_offseted_paths = []
+        self.VL_paths = []
+        self.VL_offseted_paths = []
+        self.y_paths = []
+        self.z_paths = []
+        reference_x = reference_y = None
+        sum_z = None
+        compatible = True
 
-        for k, path in enumerate(self.path_lst):
-            # file読み込み、および、測定条件抽出
+        for path in self.path_lst:
             print(f'Load File: {path}')
             self._read_file(path)
             self._extract_measurement_conditions()
-            # 強度データを抽出
-            data_ = self._extract_intensity_data()
-
-            data = np.array(data_)
-
-            self.z_paths.append(data)
-            self.x_paths.append(self.x)
-
-            # z_ = self._normalize_raw_z_data(data)
-            self._append_data(data)
-
-            if k == 0:
-                x_min_old = copy.deepcopy(self.x_min)
-                x_max_old = copy.deepcopy(self.x_max)
+            data = self._extract_intensity_data()
+            # Rows in the file are energies, columns are momentum points.
+            # The rest of SpecTaroScopy expects rows = y, columns = x.
+            z = np.nan_to_num(np.asarray(data, dtype=float).T,
+                              nan=0.0, posinf=0.0, neginf=0.0)
+            x = self.x.copy()
+            y = self.y.copy()
+            if z.shape != (len(y), len(x)):
+                raise ValueError(f'Axis/image mismatch in {path}: '
+                                 f'z={z.shape}, x={len(x)}, y={len(y)}')
+            self.z_paths.append(z.copy())
+            self.x_paths.append(x)
+            self.y_paths.append(y)
+            if reference_x is None:
+                reference_x, reference_y = x.copy(), y.copy()
+                sum_z = z.copy()
+            elif (np.array_equal(reference_x, x) and
+                  np.array_equal(reference_y, y)):
+                if compatible:
+                    sum_z += z
             else:
-                # エネルギー範囲が異なる場合は積算不可 (point数が等しくても範囲が異なると意味がない)
-                if x_min_old != self.x_min or x_max_old != self.x_max:
-                    self.z_sekisan_flag = False
-                    print(f"{self.filename_lst[k]}のエネルギー範囲が異なるため平均化処理できませんでした。")
-                x_min_old = copy.deepcopy(self.x_min)
-                x_max_old = copy.deepcopy(self.x_max)
-        
-        # 積算可能化どうかでファイル名が決定される
-        if self.z_sekisan_flag is False:
-            self.filename=self.filename_lst[-1]
+                compatible = False
+                print(f'Axis coordinates differ: {path}; using last file instead of averaging.')
+
+        if not self.z_paths:
+            raise ValueError('No IgorPro Image files were selected.')
+        self.z_sekisan_flag = compatible
+        self.z = sum_z / len(self.z_paths) if compatible else self.z_paths[-1].copy()
+        # Keep displayed coordinates consistent with the displayed image.
+        if compatible:
+            self.x, self.y = reference_x.copy(), reference_y.copy()
         else:
-            self.filename = self._create_filename(self.filename_lst)
-
-        # 強度の規格化
-        # 今回は積算平均化は行わない。複数のpathを読み込んだときにpath数で平均化する
-        self._finalize_z_image()
-
-        self.x_offseted = copy.deepcopy(self.x)
-        self.y_offseted = copy.deepcopy(self.y)
-
+            self.x, self.y = self.x_paths[-1].copy(), self.y_paths[-1].copy()
+        self._set_axis_metadata()
+        self.filename = (self._create_filename(self.filename_lst)
+                         if compatible else self.filename_lst[-1])
+        self.x_offseted = self.x.copy()
+        self.y_offseted = self.y.copy()
 
     def _read_file(self, path):
-        with open(path, encoding='utf-8', errors='replace') as f:
-            # 改行だけ削る（タブは絶対に消さない）
-            self.l = [s.rstrip('\n').rstrip('\r') for s in f.readlines()]
-        # print("1行目", repr(self.l[3]))
-        # print("99行目", repr(self.l[100]))
-        # print("3行目", self.l[2])
-        # print("4行目", self.l[3])
-    
+        with open(path, encoding='utf-8-sig', errors='replace') as f:
+            self.l = [line.rstrip('\r\n') for line in f]
+
     def _extract_measurement_conditions(self):
-        
         self.Epass = None
-        self.x_label = 'Kinetic Energy (eV)'
-        self.y_label = r"$k_{\parallel} \ \mathrm{(\AA^{-1})}$"
-        self.y_label_initial = r"$k_{\parallel} \ \mathrm{(\AA^{-1})}$"
-        self.z_label = 'Intensity (counts)'
-
-
-        self.x = np.array(self.l[1].split('\t')[1:], dtype=float)
-        # print('x:', self.x)
-        self.x_min = np.amin(self.x)
-        self.x_max = np.amax(self.x)
-        self.x_step = abs(np.round(float(self.x[0])-float(self.x[1]), ORDER_X))
+        self.x_label = 'X' #'Binding Energy (eV)'
+        self.y_label = 'Y' # r'$k_{\parallel}\ \mathrm{(\AA^{-1})}$'
+        self.y_label_initial = self.y_label
+        self.z_label = 'Z' #'Intensity (counts)'
+        if len(self.l) < 3:
+            raise ValueError('Expected title, coordinate header, and data rows.')
+        header = self.l[1].split('\t')
+        if len(header) < 2:
+            raise ValueError('Second line must contain tab-separated momentum coordinates.')
+        try:
+            self.y = np.asarray([float(v) for v in header[1:]], dtype=float)
+        except ValueError as exc:
+            raise ValueError('Non-numeric momentum coordinate in second line.') from exc
+        if not np.all(np.isfinite(self.y)):
+            raise ValueError('Non-finite momentum coordinate.')
 
     def _extract_intensity_data(self, data_index='DATA:'):
-        data = []
-        self.y = []
-        self.labels = []
-        index=2
-            
-        for i in range(index + 1, len(self.l) - index):
-            # タブ区切り（空要素を保持）
-            row = self.l[i].rstrip('\n').split('\t')
+        energies = []
+        intensities = []
+        n_y = len(self.y)
+        for lineno, line in enumerate(self.l[2:], start=3):
+            if not line.strip():
+                continue
+            fields = line.split('\t')
+            if len(fields) != n_y + 1:
+                raise ValueError(f'Line {lineno}: expected {n_y + 1} columns, '
+                                 f'found {len(fields)}.')
+            try:
+                energy = float(fields[0])
+                values = [float(v) if v.strip() else 0.0 for v in fields[1:]]
+            except ValueError as exc:
+                raise ValueError(f'Line {lineno}: invalid numeric value.') from exc
+            energies.append(energy)
+            intensities.append(values)
+        if not energies:
+            raise ValueError('No image data rows found.')
+        self.x = np.asarray(energies, dtype=float)
+        if not np.all(np.isfinite(self.x)):
+            raise ValueError('Non-finite energy coordinate.')
+        self._set_axis_metadata()
+        return np.asarray(intensities, dtype=float)
 
-            # 空要素 → 0、数値化
-            for j, v in enumerate(row):
-                if v == '' or v.isspace():
-                    row[j] = 0.0
-                else:
-                    try:
-                        row[j] = float(v)
-                    except ValueError:
-                        row[j] = 0.0
-
-            # 1列目 → y
-            nx = len(self.x)
-            if row[1:]==[]:
-                # --- ケース1: row が空（完全に空行） ---
-                data.append([0.0] * nx)
-            else:
-                # 2列目以降 → intensity（行ごと）
-                data.append(row[1:])
-            
-            self.y.append(row[0])
-
-            # print('line:', len(data[-1]))
-        
-        self.y = np.array(self.y, dtype=float)
-        # print("y:", self.y)
-        self.y_min = np.amin(self.y)
-        self.y_max = np.amax(self.y)
-        self.y_step = abs(np.round(float(self.y[0])-float(self.y[1]), ORDER_Y))
-        
-        # print(data[0][:10])
-        # print(data[50][:10])
-        return data
-
+    def _set_axis_metadata(self):
+        self.x_min, self.x_max = float(np.min(self.x)), float(np.max(self.x))
+        self.y_min, self.y_max = float(np.min(self.y)), float(np.max(self.y))
+        self.x_step = float(abs(self.x[1] - self.x[0])) if len(self.x) > 1 else 0.0
+        self.y_step = float(abs(self.y[1] - self.y[0])) if len(self.y) > 1 else 0.0
 
     def _append_data(self, z_):
-        if self.x_label == "Binding Energy (eV)":
-            self.EF_paths.append(self.EF)
-        else:
-            self.x_paths.append(self.x)
-
+        """Compatibility method; load_data handles averaging explicitly."""
         if self.z is None:
-            self.z = copy.deepcopy(z_)
+            self.z = np.asarray(z_, dtype=float).copy()
         else:
-            try:
-                self.z += z_
-            except:
+            if self.z.shape != np.shape(z_):
                 self.z_sekisan_flag = False
-                print("積算失敗：データ点数が一致していません")
+                return
+            self.z += z_
 
     def _finalize_z_image(self):
-        if self.z_sekisan_flag:
-            self.z /= len(self.path_lst)
-            
-        else: # 積算できないときは最後に読み込んだデータを表示させる
-            self.z = self.z_paths[-1]
-    
+        """Compatibility method; averaging is performed in load_data."""
+        return
+
 if __name__ == "__main__":
     main()

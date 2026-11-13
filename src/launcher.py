@@ -173,16 +173,19 @@ class ChoseAnalysisFrame(customtkinter.CTkFrame): # GUI下部
         deconvolution_button.grid(row=1, column=1, padx=(5, 0), pady=(0,5), sticky="ew")
 
         pes_intensity_map_button = customtkinter.CTkButton(master=self, text="PES Image", font=self.fonts, command=lambda: self.analysis_button_callback(3))
-        pes_intensity_map_button.grid(row=1, column=3, padx=(5, 0), pady=(0,5), sticky="ew")
+        pes_intensity_map_button.grid(row=1, column=2, padx=(5, 0), pady=(0,5), sticky="ew")
 
         deflector_map_button = customtkinter.CTkButton(master=self, text="(D)Deflector Map", font=self.fonts, command=lambda: self.analysis_button_callback(5))
-        deflector_map_button.grid(row=1, column=4, padx=(5, 10), pady=(0,5), sticky="ew")
+        deflector_map_button.grid(row=1, column=3, padx=(5, 10), pady=(0,5), sticky="ew")
 
         second_derivative_button = customtkinter.CTkButton(master=self, text="Second Derivative", font=self.fonts, command=lambda: self.analysis_button_callback(2))
         second_derivative_button.grid(row=2, column=0, padx=(10, 0), pady=(0,10), sticky="ew")
 
         curvature_button = customtkinter.CTkButton(master=self, text="Curvature", font=self.fonts, command=lambda: self.analysis_button_callback(4))
         curvature_button.grid(row=2, column=1, padx=(5, 0), pady=(0,10), sticky="ew")
+
+        leips_button = customtkinter.CTkButton(master=self, text="LEIPS", font=self.fonts, command=lambda: self.analysis_button_callback(6))
+        leips_button.grid(row=2, column=2, padx=(5, 0), pady=(0,10), sticky="ew")
 
     def analysis_button_callback(self, button_id):
         if button_id == 0:
@@ -208,6 +211,10 @@ class ChoseAnalysisFrame(customtkinter.CTkFrame): # GUI下部
         elif button_id == 5:
             print("Deflector Map Analysis")
             # app_path = os.path.join(PARENT_DIRECTORY, 'deflector_map.py')
+
+        elif button_id == 6:
+            print("LEIPS Analysis")
+            app_path = os.path.join(SRC_DIRECTORY, 'analysis', 'LEIPS2.py')
 
         # app起動
         subprocess.Popen(['python', app_path], start_new_session=True)

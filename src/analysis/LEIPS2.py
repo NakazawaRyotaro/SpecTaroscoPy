@@ -11,13 +11,27 @@ import os
 from pathlib import Path
 import customtkinter as ctk
 
+# sysモジュールをインポート（Pythonのパスや環境に関する操作をするため）
+import sys      
+# osモジュールをインポート（ファイルパスの操作や環境関連の処理に使う）
+import os
+# sys.path（Pythonのモジュール検索パス）に新しいパスを追加する --> srcディレクトリ が追加される
+sys.path.append(
+    # os.path.abspath: 相対パスを絶対パスに変換する
+    os.path.abspath(
+        # os.path.join: 複数のパスをつなげる（この場合、「今のファイルのディレクトリ」と「..（1つ上）」をつなげる）
+        os.path.join(
+            # os.path.dirname(__file__): このスクリプトファイル（.py）が存在するディレクトリのパスを取得
+            os.path.dirname(__file__),
+            '..'  # 「..」は1つ上の階層（親ディレクトリ）を意味する
+        )
+    )
+)
 # 自作モジュールのインポート（srcを基準にした絶対import）
 from RyoPy import defs_for_analysis as rpa
 
-# srcのディレクトリを取得
-SRC_PATH = Path(__file__).resolve().parent
-
-# print(CURRENT_PATH)
+# srcディレクトリを取得
+SRC_PATH = Path(__file__).resolve().parent.parent
 # ファイルパスを統一的に管理
 default_setting_path = os.path.join(SRC_PATH, "setting", "default_setting.txt")
 
@@ -134,6 +148,7 @@ def ask_wavelength():
 
     entry = ctk.CTkEntry(app, width=300)
     entry.pack(padx=10, pady=(0, 10))
+    entry.insert(0, "257")
     entry.focus_set()
 
     button_frame = ctk.CTkFrame(app)
@@ -673,11 +688,7 @@ y_leet_shifted, y_leips_shifted, shifted_point, y_leet_dif, y_leet_dif_shifted =
                                                                                 ref_scan=idx_ref_scan)
 
 # LEETを基準にシフトさせたLEIPSの平均を計算してプロット
-<<<<<<< HEAD
-y_leips_shifted_avg = calculate_average_intensity(y_leips_shifted, end=3)
-=======
 y_leips_shifted_avg = calculate_average_intensity(y_leips_shifted)
->>>>>>> main/HEAD
 
 Eb_EF, X_EF = convert_Ek_to_Eb(x, X_EF_ref, WAVELENGTH_BPF_ref, WAVELENGTH_BPF)
 
